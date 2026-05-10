@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "baseUrl": ".",
+    "baseUrl": "../..",
     "outDir": "../../dist/apps/api",
     "types": ["node", "jest"]
   },
