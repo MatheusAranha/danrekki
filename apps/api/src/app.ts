@@ -2,6 +2,11 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import createHttpError, { isHttpError } from 'http-errors';
 import { Db } from 'mongodb';
+import { ForbiddenError, UnauthorizedError } from '@danrekki/shared';
+
+import { authenticate, requireAdmin } from './middleware/auth.middleware';
+import { JwtTokenService } from './infrastructure/jwt-token-service';
+import { config } from './config';
 
 import { MongoClanV1DatabaseRepository } from '@danrekki/shared/domains/clan-v1/adapters/mongo-clan-v1-database-repository';
 import { registerClanV1Routes } from '@danrekki/shared/domains/clan-v1/adapters/express-clan-v1.controller';
@@ -43,16 +48,52 @@ import { ListJutsusV1UseCase } from '@danrekki/shared/domains/jutsu-v1/core/use-
 import { UpdateJutsuV1UseCase } from '@danrekki/shared/domains/jutsu-v1/core/use-cases/update';
 import { DeleteJutsuV1UseCase } from '@danrekki/shared/domains/jutsu-v1/core/use-cases/delete';
 
+import { MongoUserV1DatabaseRepository } from '@danrekki/shared/domains/user-v1/adapters/mongo-user-v1-database-repository';
+import { registerUserV1Routes } from '@danrekki/shared/domains/user-v1/adapters/express-user-v1.controller';
+import { CreateUserV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/create';
+import { LoginUserV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/login';
+import { GetUserV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/get';
+import { ListUsersV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/list';
+import { UpdateUserV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/update';
+import { DeleteUserV1UseCase } from '@danrekki/shared/domains/user-v1/core/use-cases/delete';
+
+import { MongoCharacterV1DatabaseRepository } from '@danrekki/shared/domains/character-v1/adapters/mongo-character-v1-database-repository';
+import { registerCharacterV1Routes } from '@danrekki/shared/domains/character-v1/adapters/express-character-v1.controller';
+import { CreateCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/create';
+import { GetCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/get';
+import { ListCharactersV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/list';
+import { UpdateCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/update';
+import { DeleteCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/delete';
+
+import { MongoCharacterReleaseV1DatabaseRepository } from '@danrekki/shared/domains/character-release-v1/adapters/mongo-character-release-v1-database-repository';
+import { registerCharacterReleaseV1Routes } from '@danrekki/shared/domains/character-release-v1/adapters/express-character-release-v1.controller';
+import { AssignCharacterReleaseV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/assign';
+import { RevokeCharacterReleaseV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/revoke';
+import { ListByCharacterCharacterReleaseV1UseCase as ListCharacterReleasesV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/list-by-character';
+
 export function createApp(db: Db) {
   const app = express();
+  const { jwtSecret, jwtExpiresIn } = config();
+  const tokenService = new JwtTokenService(jwtSecret, jwtExpiresIn);
 
   app.use(cors());
   app.use(express.json());
 
-  app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
+  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+  // — Users: /auth/* is public, /users/* requires admin —
+  app.use('/users', authenticate, requireAdmin);
+  const userRepo = new MongoUserV1DatabaseRepository(db);
+  registerUserV1Routes(app, {
+    createUser: new CreateUserV1UseCase(userRepo),
+    loginUser: new LoginUserV1UseCase(userRepo, tokenService),
+    getUser: new GetUserV1UseCase(userRepo),
+    listUsers: new ListUsersV1UseCase(userRepo),
+    updateUser: new UpdateUserV1UseCase(userRepo),
+    deleteUser: new DeleteUserV1UseCase(userRepo),
   });
 
+  // — Reference data (admin-write, public-read) —
   const clanRepo = new MongoClanV1DatabaseRepository(db);
   registerClanV1Routes(app, {
     createClan: new CreateClanV1UseCase(clanRepo),
@@ -98,11 +139,35 @@ export function createApp(db: Db) {
     deleteJutsu: new DeleteJutsuV1UseCase(jutsuRepo),
   });
 
-  app.use((_req, _res, next) => {
-    next(createHttpError(404, 'Route not found'));
+  // — Characters —
+  const characterRepo = new MongoCharacterV1DatabaseRepository(db);
+  registerCharacterV1Routes(app, {
+    createCharacter: new CreateCharacterV1UseCase(characterRepo),
+    getCharacter: new GetCharacterV1UseCase(characterRepo),
+    listCharacters: new ListCharactersV1UseCase(characterRepo),
+    updateCharacter: new UpdateCharacterV1UseCase(characterRepo),
+    deleteCharacter: new DeleteCharacterV1UseCase(characterRepo),
   });
 
+  const characterReleaseRepo = new MongoCharacterReleaseV1DatabaseRepository(db);
+  registerCharacterReleaseV1Routes(app, {
+    assignRelease: new AssignCharacterReleaseV1UseCase(characterReleaseRepo, characterRepo, releaseRepo),
+    revokeRelease: new RevokeCharacterReleaseV1UseCase(characterReleaseRepo),
+    listCharacterReleases: new ListCharacterReleasesV1UseCase(characterReleaseRepo),
+  });
+
+  // — Global error handler —
+  app.use((_req, _res, next) => next(createHttpError(404, 'Route not found')));
+
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof UnauthorizedError) {
+      res.status(401).json({ error: err.message });
+      return;
+    }
+    if (err instanceof ForbiddenError) {
+      res.status(403).json({ error: err.message });
+      return;
+    }
     if (isHttpError(err)) {
       res.status(err.status).json({ error: err.message });
       return;
