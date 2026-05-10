@@ -71,6 +71,46 @@ import { AssignCharacterReleaseV1UseCase } from '@danrekki/shared/domains/charac
 import { RevokeCharacterReleaseV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/revoke';
 import { ListByCharacterCharacterReleaseV1UseCase as ListCharacterReleasesV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/list-by-character';
 
+import { MongoLibraryV1DatabaseRepository } from '@danrekki/shared/domains/library-v1/adapters/mongo-library-v1-database-repository';
+import { registerLibraryV1Routes } from '@danrekki/shared/domains/library-v1/adapters/express-library-v1.controller';
+import { CreateLibraryV1UseCase } from '@danrekki/shared/domains/library-v1/core/use-cases/create';
+import { GetLibraryV1UseCase } from '@danrekki/shared/domains/library-v1/core/use-cases/get';
+import { ListLibrariesV1UseCase } from '@danrekki/shared/domains/library-v1/core/use-cases/list';
+import { UpdateLibraryV1UseCase } from '@danrekki/shared/domains/library-v1/core/use-cases/update';
+import { DeleteLibraryV1UseCase } from '@danrekki/shared/domains/library-v1/core/use-cases/delete';
+
+import { MongoLibraryScrollV1DatabaseRepository } from '@danrekki/shared/domains/library-scroll-v1/adapters/mongo-library-scroll-v1-database-repository';
+import { registerLibraryScrollV1Routes } from '@danrekki/shared/domains/library-scroll-v1/adapters/express-library-scroll-v1.controller';
+import { CreateLibraryScrollV1UseCase } from '@danrekki/shared/domains/library-scroll-v1/core/use-cases/create';
+import { GetLibraryScrollV1UseCase } from '@danrekki/shared/domains/library-scroll-v1/core/use-cases/get';
+import { ListLibraryScrollsByLibraryV1UseCase } from '@danrekki/shared/domains/library-scroll-v1/core/use-cases/list-by-library';
+import { UpdateLibraryScrollV1UseCase } from '@danrekki/shared/domains/library-scroll-v1/core/use-cases/update';
+import { DeleteLibraryScrollV1UseCase } from '@danrekki/shared/domains/library-scroll-v1/core/use-cases/delete';
+
+import { MongoSenseiV1DatabaseRepository } from '@danrekki/shared/domains/sensei-v1/adapters/mongo-sensei-v1-database-repository';
+import { registerSenseiV1Routes } from '@danrekki/shared/domains/sensei-v1/adapters/express-sensei-v1.controller';
+import { CreateSenseiV1UseCase } from '@danrekki/shared/domains/sensei-v1/core/use-cases/create';
+import { GetSenseiV1UseCase } from '@danrekki/shared/domains/sensei-v1/core/use-cases/get';
+import { ListSenseiV1UseCase } from '@danrekki/shared/domains/sensei-v1/core/use-cases/list';
+import { UpdateSenseiV1UseCase } from '@danrekki/shared/domains/sensei-v1/core/use-cases/update';
+import { DeleteSenseiV1UseCase } from '@danrekki/shared/domains/sensei-v1/core/use-cases/delete';
+
+import { MongoTrainableContentV1DatabaseRepository } from '@danrekki/shared/domains/trainable-content-v1/adapters/mongo-trainable-content-v1-database-repository';
+import { registerTrainableContentV1Routes } from '@danrekki/shared/domains/trainable-content-v1/adapters/express-trainable-content-v1.controller';
+import { CreateTrainableContentV1UseCase } from '@danrekki/shared/domains/trainable-content-v1/core/use-cases/create';
+import { GetTrainableContentV1UseCase } from '@danrekki/shared/domains/trainable-content-v1/core/use-cases/get';
+import { ListTrainableContentV1UseCase } from '@danrekki/shared/domains/trainable-content-v1/core/use-cases/list';
+import { UpdateTrainableContentV1UseCase } from '@danrekki/shared/domains/trainable-content-v1/core/use-cases/update';
+import { DeleteTrainableContentV1UseCase } from '@danrekki/shared/domains/trainable-content-v1/core/use-cases/delete';
+
+import { MongoSenseiContentV1DatabaseRepository } from '@danrekki/shared/domains/sensei-content-v1/adapters/mongo-sensei-content-v1-database-repository';
+import { registerSenseiContentV1Routes } from '@danrekki/shared/domains/sensei-content-v1/adapters/express-sensei-content-v1.controller';
+import { AssignSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/assign';
+import { GetSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/get';
+import { ListBySenseiSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/list-by-sensei';
+import { UpdateSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/update';
+import { DeleteSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/delete';
+
 export function createApp(db: Db) {
   const app = express();
   const { jwtSecret, jwtExpiresIn } = config();
@@ -154,6 +194,54 @@ export function createApp(db: Db) {
     assignRelease: new AssignCharacterReleaseV1UseCase(characterReleaseRepo, characterRepo, releaseRepo),
     revokeRelease: new RevokeCharacterReleaseV1UseCase(characterReleaseRepo),
     listCharacterReleases: new ListCharacterReleasesV1UseCase(characterReleaseRepo),
+  });
+
+  // — Libraries —
+  const libraryRepo = new MongoLibraryV1DatabaseRepository(db);
+  registerLibraryV1Routes(app, {
+    createLibrary: new CreateLibraryV1UseCase(libraryRepo),
+    getLibrary: new GetLibraryV1UseCase(libraryRepo),
+    listLibraries: new ListLibrariesV1UseCase(libraryRepo),
+    updateLibrary: new UpdateLibraryV1UseCase(libraryRepo),
+    deleteLibrary: new DeleteLibraryV1UseCase(libraryRepo),
+  });
+
+  const libraryScrollRepo = new MongoLibraryScrollV1DatabaseRepository(db);
+  registerLibraryScrollV1Routes(app, {
+    createScroll: new CreateLibraryScrollV1UseCase(libraryScrollRepo, libraryRepo, jutsuRepo, ninjaRankRepo),
+    getScroll: new GetLibraryScrollV1UseCase(libraryScrollRepo),
+    listLibraryScrolls: new ListLibraryScrollsByLibraryV1UseCase(libraryScrollRepo),
+    updateScroll: new UpdateLibraryScrollV1UseCase(libraryScrollRepo),
+    deleteScroll: new DeleteLibraryScrollV1UseCase(libraryScrollRepo),
+  });
+
+  // — Senseis —
+  const senseiRepo = new MongoSenseiV1DatabaseRepository(db);
+  registerSenseiV1Routes(app, {
+    createSensei: new CreateSenseiV1UseCase(senseiRepo),
+    getSensei: new GetSenseiV1UseCase(senseiRepo),
+    listSenseis: new ListSenseiV1UseCase(senseiRepo),
+    updateSensei: new UpdateSenseiV1UseCase(senseiRepo),
+    deleteSensei: new DeleteSenseiV1UseCase(senseiRepo),
+  });
+
+  // — Trainable Content —
+  const trainableContentRepo = new MongoTrainableContentV1DatabaseRepository(db);
+  registerTrainableContentV1Routes(app, {
+    createContent: new CreateTrainableContentV1UseCase(trainableContentRepo, jutsuRepo),
+    getContent: new GetTrainableContentV1UseCase(trainableContentRepo),
+    listContents: new ListTrainableContentV1UseCase(trainableContentRepo),
+    updateContent: new UpdateTrainableContentV1UseCase(trainableContentRepo),
+    deleteContent: new DeleteTrainableContentV1UseCase(trainableContentRepo),
+  });
+
+  const senseiContentRepo = new MongoSenseiContentV1DatabaseRepository(db);
+  registerSenseiContentV1Routes(app, {
+    assignContent: new AssignSenseiContentV1UseCase(senseiContentRepo, senseiRepo, trainableContentRepo),
+    getSenseiContent: new GetSenseiContentV1UseCase(senseiContentRepo),
+    listSenseiContents: new ListBySenseiSenseiContentV1UseCase(senseiContentRepo),
+    updateSenseiContent: new UpdateSenseiContentV1UseCase(senseiContentRepo),
+    deleteSenseiContent: new DeleteSenseiContentV1UseCase(senseiContentRepo),
   });
 
   // — Global error handler —
