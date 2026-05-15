@@ -4,11 +4,13 @@ import { StartLearningV1UseCase } from '../core/use-cases/start-learning';
 import { InvestDtV1UseCase } from '../core/use-cases/invest-dt';
 import { GetCharacterLearningProgressV1UseCase } from '../core/use-cases/get';
 import { ListByCharacterLearningProgressV1UseCase } from '../core/use-cases/list-by-character';
+import { GetTrainingCatalogV1UseCase } from '../core/use-cases/get-catalog';
 import {
   LearningProgressV1NotFoundError,
   LearningProgressV1AlreadyExistsError,
   LearningProgressV1AlreadyCompletedError,
   InsufficientDtError,
+  TrainingAccessDeniedError,
 } from '../core/errors';
 import { CharacterV1NotFoundError } from '../../character-v1/core/errors';
 import { TrainableContentV1NotFoundError } from '../../trainable-content-v1/core/errors';
@@ -18,9 +20,25 @@ interface LearningProgressUseCases {
   investDt: InvestDtV1UseCase;
   getProgress: GetCharacterLearningProgressV1UseCase;
   listProgress: ListByCharacterLearningProgressV1UseCase;
+  getTrainingCatalog: GetTrainingCatalogV1UseCase;
 }
 
 export function registerCharacterLearningProgressV1Routes(app: Express, useCases: LearningProgressUseCases): void {
+  app.get('/characters/:characterId/training-catalog', async (req, res, next) => {
+    try {
+      const includeIneligible = req.query['include_ineligible'] === 'true';
+      res.json(
+        await useCases.getTrainingCatalog.execute({
+          character_id: req.params['characterId'],
+          include_ineligible: includeIneligible,
+        }),
+      );
+    } catch (err) {
+      if (err instanceof CharacterV1NotFoundError) return next(createHttpError(404, err.message));
+      next(err);
+    }
+  });
+
   app.get('/characters/:characterId/learning-progress', async (req, res, next) => {
     try {
       res.json(await useCases.listProgress.execute({ character_id: req.params['characterId'] }));
@@ -41,6 +59,7 @@ export function registerCharacterLearningProgressV1Routes(app: Express, useCases
       if (err instanceof CharacterV1NotFoundError) return next(createHttpError(404, err.message));
       if (err instanceof TrainableContentV1NotFoundError) return next(createHttpError(404, err.message));
       if (err instanceof LearningProgressV1AlreadyExistsError) return next(createHttpError(409, err.message));
+      if (err instanceof TrainingAccessDeniedError) return next(createHttpError(403, err.message));
       next(err);
     }
   });

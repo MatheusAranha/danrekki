@@ -4,13 +4,17 @@ import { schemaValidator } from '../../../../../_shared/validators/json-schema-v
 import { info as logInfo, error as logError } from '../../../../../_shared/logger';
 import { CharacterLearningProgressV1DatabaseRepository } from '../../database-repository';
 import { CharacterLearningProgressV1Entity } from '../../entity';
-import { LearningProgressV1AlreadyExistsError } from '../../errors';
+import { LearningProgressV1AlreadyExistsError, TrainingAccessDeniedError } from '../../errors';
 import { CharacterV1DatabaseRepository } from '../../../../character-v1/core/database-repository';
 import { CharacterV1NotFoundError } from '../../../../character-v1/core/errors';
 import { TrainableContentV1DatabaseRepository } from '../../../../trainable-content-v1/core/database-repository';
 import { TrainableContentV1NotFoundError } from '../../../../trainable-content-v1/core/errors';
 import { ClanV1DatabaseRepository } from '../../../../clan-v1/core/database-repository';
 import { CharacterReleaseV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
+import { CharacterLibraryV1DatabaseRepository } from '../../../../character-library-v1/core/database-repository';
+import { LibraryScrollV1DatabaseRepository } from '../../../../library-scroll-v1/core/database-repository';
+import { CharacterSenseiV1DatabaseRepository } from '../../../../character-sensei-v1/core/database-repository';
+import { SenseiContentV1DatabaseRepository } from '../../../../sensei-content-v1/core/database-repository';
 import { calculateDtCost } from '../../services/calculate-dt-cost';
 import { IStartLearningV1UseCaseInputDto, IStartLearningV1UseCaseOutputDto } from './types';
 
@@ -31,6 +35,10 @@ export class StartLearningV1UseCase {
     private readonly contentRepo: TrainableContentV1DatabaseRepository,
     private readonly clanRepo: ClanV1DatabaseRepository,
     private readonly characterReleaseRepo: CharacterReleaseV1DatabaseRepository,
+    private readonly characterLibraryRepo: CharacterLibraryV1DatabaseRepository,
+    private readonly libraryScrollRepo: LibraryScrollV1DatabaseRepository,
+    private readonly characterSenseiRepo: CharacterSenseiV1DatabaseRepository,
+    private readonly senseiContentRepo: SenseiContentV1DatabaseRepository,
   ) {}
 
   async execute(inputDto: IStartLearningV1UseCaseInputDto): Promise<IStartLearningV1UseCaseOutputDto> {
@@ -55,6 +63,8 @@ export class StartLearningV1UseCase {
         );
       }
       log.steps.push({ message: 'Verified no active learning progress exists.' });
+
+      await this.checkAccess(inputDto.character_id, content._id, content.jutsu_id, log);
 
       const clan = character.clan_id ? await this.clanRepo.findById(character.clan_id) : null;
       log.steps.push({ message: clan ? `Clan ${character.clan_id} found.` : 'No clan found, using empty modifiers.' });
@@ -95,5 +105,37 @@ export class StartLearningV1UseCase {
       logError('Error starting LearningProgressV1', log);
       throw err;
     }
+  }
+
+  private async checkAccess(characterId: string, contentId: string, jutsuId: string | null, log: ILog): Promise<void> {
+    const charSenseis = await this.characterSenseiRepo.findByCharacterId(characterId);
+    let hasSenseiAccess = false;
+    for (const charSensei of charSenseis) {
+      const sc = await this.senseiContentRepo.findBySenseiAndContent(charSensei.sensei_id, contentId);
+      if (sc && charSensei.proximity >= sc.required_proximity) {
+        hasSenseiAccess = true;
+        break;
+      }
+    }
+
+    if (hasSenseiAccess) {
+      log.steps.push({ message: 'Access granted via sensei.' });
+      return;
+    }
+
+    if (jutsuId) {
+      const charLibraries = await this.characterLibraryRepo.findByCharacterId(characterId);
+      for (const charLib of charLibraries) {
+        const scrolls = await this.libraryScrollRepo.findByLibraryId(charLib.library_id);
+        if (scrolls.some((s) => s.jutsu_id === jutsuId)) {
+          log.steps.push({ message: 'Access granted via library scroll.' });
+          return;
+        }
+      }
+    }
+
+    throw new TrainingAccessDeniedError(
+      `Character "${characterId}" does not have access to trainable content "${contentId}"`,
+    );
   }
 }

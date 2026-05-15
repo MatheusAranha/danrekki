@@ -137,6 +137,7 @@ import { StartLearningV1UseCase } from '@danrekki/shared/domains/character-learn
 import { InvestDtV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/invest-dt';
 import { GetCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/get';
 import { ListByCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/list-by-character';
+import { GetTrainingCatalogV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/get-catalog';
 
 export function createApp(db: Db) {
   const app = express();
@@ -305,10 +306,26 @@ export function createApp(db: Db) {
       trainableContentRepo,
       clanRepo,
       characterReleaseRepo,
+      characterLibraryRepo,
+      libraryScrollRepo,
+      characterSenseiRepo,
+      senseiContentRepo,
     ),
     investDt: new InvestDtV1UseCase(learningProgressRepo, characterRepo, dtTransactionRepo, sessionFactory),
     getProgress: new GetCharacterLearningProgressV1UseCase(learningProgressRepo),
     listProgress: new ListByCharacterLearningProgressV1UseCase(learningProgressRepo),
+    getTrainingCatalog: new GetTrainingCatalogV1UseCase(
+      learningProgressRepo,
+      characterRepo,
+      characterLibraryRepo,
+      libraryScrollRepo,
+      characterSenseiRepo,
+      senseiContentRepo,
+      trainableContentRepo,
+      jutsuRepo,
+      clanRepo,
+      characterReleaseRepo,
+    ),
   });
 
   // — Global error handler —
