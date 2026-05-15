@@ -111,6 +111,20 @@ import { ListBySenseiSenseiContentV1UseCase } from '@danrekki/shared/domains/sen
 import { UpdateSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/update';
 import { DeleteSenseiContentV1UseCase } from '@danrekki/shared/domains/sensei-content-v1/core/use-cases/delete';
 
+import { MongoCharacterLibraryV1DatabaseRepository } from '@danrekki/shared/domains/character-library-v1/adapters/mongo-character-library-v1-database-repository';
+import { registerCharacterLibraryV1Routes } from '@danrekki/shared/domains/character-library-v1/adapters/express-character-library-v1.controller';
+import { AssignCharacterLibraryV1UseCase } from '@danrekki/shared/domains/character-library-v1/core/use-cases/assign';
+import { GetCharacterLibraryV1UseCase } from '@danrekki/shared/domains/character-library-v1/core/use-cases/get';
+import { ListByCharacterCharacterLibraryV1UseCase } from '@danrekki/shared/domains/character-library-v1/core/use-cases/list-by-character';
+import { DeleteCharacterLibraryV1UseCase } from '@danrekki/shared/domains/character-library-v1/core/use-cases/delete';
+
+import { MongoCharacterSenseiV1DatabaseRepository } from '@danrekki/shared/domains/character-sensei-v1/adapters/mongo-character-sensei-v1-database-repository';
+import { registerCharacterSenseiV1Routes } from '@danrekki/shared/domains/character-sensei-v1/adapters/express-character-sensei-v1.controller';
+import { AssignCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/assign';
+import { GetCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/get';
+import { ListByCharacterCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/list-by-character';
+import { DeleteCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/delete';
+
 export function createApp(db: Db) {
   const app = express();
   const { jwtSecret, jwtExpiresIn } = config();
@@ -242,6 +256,23 @@ export function createApp(db: Db) {
     listSenseiContents: new ListBySenseiSenseiContentV1UseCase(senseiContentRepo),
     updateSenseiContent: new UpdateSenseiContentV1UseCase(senseiContentRepo),
     deleteSenseiContent: new DeleteSenseiContentV1UseCase(senseiContentRepo),
+  });
+
+  // — Character Access —
+  const characterLibraryRepo = new MongoCharacterLibraryV1DatabaseRepository(db);
+  registerCharacterLibraryV1Routes(app, {
+    assignLibrary: new AssignCharacterLibraryV1UseCase(characterLibraryRepo, characterRepo, libraryRepo, ninjaRankRepo),
+    getCharacterLibrary: new GetCharacterLibraryV1UseCase(characterLibraryRepo),
+    listCharacterLibraries: new ListByCharacterCharacterLibraryV1UseCase(characterLibraryRepo),
+    deleteCharacterLibrary: new DeleteCharacterLibraryV1UseCase(characterLibraryRepo),
+  });
+
+  const characterSenseiRepo = new MongoCharacterSenseiV1DatabaseRepository(db);
+  registerCharacterSenseiV1Routes(app, {
+    assignSensei: new AssignCharacterSenseiV1UseCase(characterSenseiRepo, characterRepo, senseiRepo),
+    getCharacterSensei: new GetCharacterSenseiV1UseCase(characterSenseiRepo),
+    listCharacterSenseis: new ListByCharacterCharacterSenseiV1UseCase(characterSenseiRepo),
+    deleteCharacterSensei: new DeleteCharacterSenseiV1UseCase(characterSenseiRepo),
   });
 
   // — Global error handler —
