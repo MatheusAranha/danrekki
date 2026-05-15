@@ -14,7 +14,6 @@ import { ClanV1DatabaseRepository } from '../../../../clan-v1/core/database-repo
 import { CharacterReleaseV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
 import { calculateDtCost } from '../../services/calculate-dt-cost';
 import { JutsuElement } from '../../../../jutsu-v1/core/types';
-import { ITrainableContentV1Dto } from '../../../../trainable-content-v1/core/types';
 import { IJutsuV1Dto } from '../../../../jutsu-v1/core/types';
 import { ICharacterLearningProgressV1Dto } from '../../types';
 import {
