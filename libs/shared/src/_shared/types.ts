@@ -13,3 +13,5 @@ export interface RepositorySession {
   withTransaction(fn: () => Promise<void>): Promise<void>;
   endSession(): Promise<void>;
 }
+
+export type SessionFactory = () => Promise<RepositorySession>;
