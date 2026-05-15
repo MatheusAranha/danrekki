@@ -1,4 +1,5 @@
-import { Collection, Db } from 'mongodb';
+import { ClientSession, Collection, Db } from 'mongodb';
+import { RepositorySession } from '../../../_shared/types';
 import { CharacterV1DatabaseRepository } from '../core/database-repository';
 import { ICharacterV1Dto } from '../core/types';
 
@@ -35,11 +36,12 @@ export class MongoCharacterV1DatabaseRepository extends CharacterV1DatabaseRepos
   async update(
     id: string,
     updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'updated_at'>>,
+    session?: RepositorySession,
   ): Promise<ICharacterV1Dto | null> {
     const result = await this.collection.findOneAndUpdate(
       { _id: id } as never,
       { $set: updates },
-      { returnDocument: 'after' },
+      { returnDocument: 'after', session: session as unknown as ClientSession },
     );
     return result ? (result as unknown as ICharacterV1Dto) : null;
   }

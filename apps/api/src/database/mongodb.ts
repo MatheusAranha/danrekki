@@ -13,6 +13,10 @@ export async function connectToDatabase(): Promise<Db> {
   return db;
 }
 
+export function getMongoClient(): MongoClient {
+  return client;
+}
+
 export async function closeDatabase(): Promise<void> {
   if (client) await client.close();
 }

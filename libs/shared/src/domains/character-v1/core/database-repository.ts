@@ -1,3 +1,4 @@
+import { RepositorySession } from '../../../_shared/types';
 import { ICharacterV1Dto } from './types';
 
 export abstract class CharacterV1DatabaseRepository {
@@ -5,6 +6,6 @@ export abstract class CharacterV1DatabaseRepository {
   abstract findByUserId(userId: string): Promise<ICharacterV1Dto[]>;
   abstract findAll(): Promise<ICharacterV1Dto[]>;
   abstract save(dto: ICharacterV1Dto): Promise<ICharacterV1Dto>;
-  abstract update(id: string, updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'updated_at'>>): Promise<ICharacterV1Dto | null>;
+  abstract update(id: string, updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'updated_at'>>, session?: RepositorySession): Promise<ICharacterV1Dto | null>;
   abstract delete(id: string): Promise<boolean>;
 }
