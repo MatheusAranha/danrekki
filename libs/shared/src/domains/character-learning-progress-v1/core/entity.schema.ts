@@ -1,0 +1,26 @@
+export const characterLearningProgressV1EntityJsonSchema = {
+  type: 'object',
+  required: [
+    '_id',
+    'character_id',
+    'trainable_content_id',
+    'dt_invested',
+    'dt_required',
+    'status',
+    'started_at',
+    'completed_at',
+    'updated_at',
+  ],
+  additionalProperties: false,
+  properties: {
+    _id: { type: 'string', minLength: 1 },
+    character_id: { type: 'string', minLength: 1 },
+    trainable_content_id: { type: 'string', minLength: 1 },
+    dt_invested: { type: 'number', minimum: 0 },
+    dt_required: { type: 'number', minimum: 0 },
+    status: { type: 'string', enum: ['in_progress', 'completed'] },
+    started_at: { type: 'string', format: 'date-time' },
+    completed_at: { type: ['string', 'null'] },
+    updated_at: { type: 'string', format: 'date-time' },
+  },
+};
