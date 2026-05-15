@@ -6,6 +6,7 @@ export interface Character {
   user_id: string;
   clan_id: string;
   available_dt: number;
+  elemental_affinities: string[];
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +43,53 @@ export interface LearningProgress {
   status: 'in_progress' | 'completed';
   started_at: string;
   completed_at: string | null;
+}
+
+export interface TrainableContent {
+  _id: string;
+  type: string;
+  jutsu_id: string | null;
+  name: string;
+  description: string;
+  base_dt_cost: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Jutsu {
+  _id: string;
+  name: string;
+  jutsu_rank_id: string;
+  release_id: string;
+  elements: string[];
+  components: string;
+  duration: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CatalogEntry {
+  trainable_content: TrainableContent;
+  jutsu: Jutsu | null;
+  dt_cost: number;
+  source:
+    | { type: 'library'; library_id: string }
+    | { type: 'sensei'; sensei_id: string };
+  learning_progress: LearningProgress | null;
+}
+
+export interface TrainingCatalog {
+  library_entries: CatalogEntry[];
+  sensei_entries: CatalogEntry[];
+}
+
+export interface DtTransaction {
+  _id: string;
+  character_id: string;
+  amount: number;
+  reason: string;
+  created_at: string;
 }
 
 export const charactersApi = {
@@ -88,5 +136,37 @@ export const charactersApi = {
   addDt: (id: string, body: { amount: number; reason: string }) =>
     apiClient
       .post(`/characters/${id}/dt-transactions`, body)
+      .then((r) => r.data),
+
+  getTrainingCatalog: (id: string, includeIneligible?: boolean) =>
+    apiClient
+      .get<TrainingCatalog>(
+        `/characters/${id}/training-catalog?include_ineligible=${includeIneligible ?? false}`
+      )
+      .then((r) => r.data),
+
+  startLearning: (id: string, body: { trainable_content_id: string }) =>
+    apiClient
+      .post(`/characters/${id}/learning-progress`, body)
+      .then((r) => r.data),
+
+  getProgress: (charId: string, progressId: string) =>
+    apiClient
+      .get<LearningProgress>(
+        `/characters/${charId}/learning-progress/${progressId}`
+      )
+      .then((r) => r.data),
+
+  investDt: (charId: string, progressId: string, body: { amount: number }) =>
+    apiClient
+      .post(
+        `/characters/${charId}/learning-progress/${progressId}/invest`,
+        body
+      )
+      .then((r) => r.data),
+
+  getDtTransactions: (id: string) =>
+    apiClient
+      .get<DtTransaction[]>(`/characters/${id}/dt-transactions`)
       .then((r) => r.data),
 };

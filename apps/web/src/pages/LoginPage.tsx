@@ -22,7 +22,11 @@ export function LoginPage() {
     try {
       const data = await authApi.login(email, password);
       login(data.token, data.user);
-      navigate('/admin/clans', { replace: true });
+      if (data.user.role === 'admin') {
+        navigate('/admin/clans', { replace: true });
+      } else {
+        navigate('/player', { replace: true });
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
       setError(

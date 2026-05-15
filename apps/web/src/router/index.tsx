@@ -16,6 +16,18 @@ import { TrainableContentsPage } from '../pages/admin/TrainableContentsPage';
 import { UsersPage } from '../pages/admin/UsersPage';
 import { CharactersPage } from '../pages/admin/CharactersPage';
 import { CharacterDetailPage } from '../pages/admin/CharacterDetailPage';
+import { PlayerLayout } from '../pages/player/PlayerLayout';
+import { PlayerHomePage } from '../pages/player/PlayerHomePage';
+import { TrainingCatalogPage } from '../pages/player/TrainingCatalogPage';
+import { LearningProgressPage } from '../pages/player/LearningProgressPage';
+import { DtHistoryPage } from '../pages/player/DtHistoryPage';
+
+function RootRedirect() {
+  const { token, user } = useAuthStore();
+  if (!token) return <Navigate to="/login" replace />;
+  if (user?.role === 'admin') return <Navigate to="/admin/clans" replace />;
+  return <Navigate to="/player" replace />;
+}
 
 function RequireAuth() {
   const { token, user } = useAuthStore();
@@ -29,6 +41,16 @@ function RequireAuth() {
   );
 }
 
+function RequirePlayer() {
+  const { token } = useAuthStore();
+  if (!token) return <Navigate to="/login" replace />;
+  return (
+    <PlayerLayout>
+      <Outlet />
+    </PlayerLayout>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: '/login',
@@ -36,7 +58,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <Navigate to="/admin/clans" replace />,
+    element: <RootRedirect />,
   },
   {
     path: '/admin',
@@ -56,6 +78,16 @@ export const router = createBrowserRouter([
       { path: 'users', element: <UsersPage /> },
       { path: 'characters', element: <CharactersPage /> },
       { path: 'characters/:characterId', element: <CharacterDetailPage /> },
+    ],
+  },
+  {
+    path: '/player',
+    element: <RequirePlayer />,
+    children: [
+      { index: true, element: <PlayerHomePage /> },
+      { path: 'catalog', element: <TrainingCatalogPage /> },
+      { path: 'progress', element: <LearningProgressPage /> },
+      { path: 'dt-history', element: <DtHistoryPage /> },
     ],
   },
 ]);
