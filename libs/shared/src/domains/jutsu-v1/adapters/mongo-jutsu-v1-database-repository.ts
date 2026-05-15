@@ -44,7 +44,7 @@ export class MongoJutsuV1DatabaseRepository extends JutsuV1DatabaseRepository {
 
   async update(
     id: string,
-    updates: Partial<Pick<IJutsuV1Dto, 'name' | 'jutsu_rank_id' | 'release_id' | 'components' | 'duration' | 'description' | 'updated_at'>>,
+    updates: Partial<Pick<IJutsuV1Dto, 'name' | 'jutsu_rank_id' | 'release_id' | 'elements' | 'components' | 'duration' | 'description' | 'updated_at'>>,
   ): Promise<IJutsuV1Dto | null> {
     const result = await this.collection.findOneAndUpdate(
       { _id: id } as never,

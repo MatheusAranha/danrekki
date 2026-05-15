@@ -11,6 +11,7 @@ class CharacterV1Factory {
       user_id: randomUUID(),
       clan_id: randomUUID(),
       available_dt: 0,
+      elemental_affinities: [],
       created_at: now,
       updated_at: now,
       ...params?.overrides,

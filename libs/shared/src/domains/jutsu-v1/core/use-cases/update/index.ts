@@ -33,6 +33,7 @@ export class UpdateJutsuV1UseCase {
         ...(inputDto.components !== undefined && { components: inputDto.components }),
         ...(inputDto.duration !== undefined && { duration: inputDto.duration }),
         ...(inputDto.description !== undefined && { description: inputDto.description }),
+        ...(inputDto.elements !== undefined && { elements: inputDto.elements }),
         updated_at: new Date().toISOString(),
       });
       log.steps.push({ message: `Jutsu ${inputDto.id} updated.` });

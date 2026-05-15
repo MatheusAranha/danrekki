@@ -1,9 +1,12 @@
 import { IJutsuV1Dto } from '../../types';
 
+import { JutsuElement } from '../../types';
+
 export interface ICreateJutsuV1UseCaseInputDto {
   name: string;
   jutsu_rank_id: string;
   release_id: string;
+  elements?: JutsuElement[];
   components: string;
   duration: string;
   description: string;

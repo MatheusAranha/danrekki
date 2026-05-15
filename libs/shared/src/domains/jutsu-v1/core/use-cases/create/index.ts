@@ -29,6 +29,7 @@ export class CreateJutsuV1UseCase {
           name: inputDto.name,
           jutsu_rank_id: inputDto.jutsu_rank_id,
           release_id: inputDto.release_id,
+          elements: inputDto.elements ?? [],
           components: inputDto.components,
           duration: inputDto.duration,
           description: inputDto.description,

@@ -9,6 +9,7 @@ export const updateJutsuV1InputDtoJsonSchema = {
     release_id: { type: 'string', minLength: 1 },
     components: { type: 'string', minLength: 1 },
     duration: { type: 'string', minLength: 1 },
+    elements: { type: 'array', items: { type: 'string', enum: ['katon', 'suiton', 'doton', 'futon', 'raiton', 'iryo'] } },
     description: { type: 'string', minLength: 1 },
   },
 };

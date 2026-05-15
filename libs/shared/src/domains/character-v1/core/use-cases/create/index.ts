@@ -25,6 +25,7 @@ export class CreateCharacterV1UseCase {
           user_id: inputDto.user_id,
           clan_id: inputDto.clan_id,
           available_dt: 0,
+          elemental_affinities: [],
           created_at: now,
           updated_at: now,
         },
