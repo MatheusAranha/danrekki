@@ -2,10 +2,11 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import createHttpError, { isHttpError } from 'http-errors';
 import { Db } from 'mongodb';
-import { ForbiddenError, UnauthorizedError } from '@danrekki/shared';
+import { ForbiddenError, UnauthorizedError, RepositorySession } from '@danrekki/shared';
 
 import { authenticate, requireAdmin } from './middleware/auth.middleware';
 import { JwtTokenService } from './infrastructure/jwt-token-service';
+import { getMongoClient } from './database/mongodb';
 import { config } from './config';
 
 import { MongoClanV1DatabaseRepository } from '@danrekki/shared/domains/clan-v1/adapters/mongo-clan-v1-database-repository';
@@ -124,6 +125,18 @@ import { AssignCharacterSenseiV1UseCase } from '@danrekki/shared/domains/charact
 import { GetCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/get';
 import { ListByCharacterCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/list-by-character';
 import { DeleteCharacterSenseiV1UseCase } from '@danrekki/shared/domains/character-sensei-v1/core/use-cases/delete';
+
+import { MongoDtTransactionV1DatabaseRepository } from '@danrekki/shared/domains/dt-transaction-v1/adapters/mongo-dt-transaction-v1-database-repository';
+import { registerDtTransactionV1Routes } from '@danrekki/shared/domains/dt-transaction-v1/adapters/express-dt-transaction-v1.controller';
+import { AddDtTransactionV1UseCase } from '@danrekki/shared/domains/dt-transaction-v1/core/use-cases/add';
+import { ListByCharacterDtTransactionV1UseCase } from '@danrekki/shared/domains/dt-transaction-v1/core/use-cases/list-by-character';
+
+import { MongoCharacterLearningProgressV1DatabaseRepository } from '@danrekki/shared/domains/character-learning-progress-v1/adapters/mongo-character-learning-progress-v1-database-repository';
+import { registerCharacterLearningProgressV1Routes } from '@danrekki/shared/domains/character-learning-progress-v1/adapters/express-character-learning-progress-v1.controller';
+import { StartLearningV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/start-learning';
+import { InvestDtV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/invest-dt';
+import { GetCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/get';
+import { ListByCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/list-by-character';
 
 export function createApp(db: Db) {
   const app = express();
@@ -273,6 +286,29 @@ export function createApp(db: Db) {
     getCharacterSensei: new GetCharacterSenseiV1UseCase(characterSenseiRepo),
     listCharacterSenseis: new ListByCharacterCharacterSenseiV1UseCase(characterSenseiRepo),
     deleteCharacterSensei: new DeleteCharacterSenseiV1UseCase(characterSenseiRepo),
+  });
+
+  // — Learning System —
+  const sessionFactory = async () => getMongoClient().startSession() as unknown as RepositorySession;
+
+  const dtTransactionRepo = new MongoDtTransactionV1DatabaseRepository(db);
+  registerDtTransactionV1Routes(app, {
+    addTransaction: new AddDtTransactionV1UseCase(dtTransactionRepo, characterRepo),
+    listTransactions: new ListByCharacterDtTransactionV1UseCase(dtTransactionRepo),
+  });
+
+  const learningProgressRepo = new MongoCharacterLearningProgressV1DatabaseRepository(db);
+  registerCharacterLearningProgressV1Routes(app, {
+    startLearning: new StartLearningV1UseCase(
+      learningProgressRepo,
+      characterRepo,
+      trainableContentRepo,
+      clanRepo,
+      characterReleaseRepo,
+    ),
+    investDt: new InvestDtV1UseCase(learningProgressRepo, characterRepo, dtTransactionRepo, sessionFactory),
+    getProgress: new GetCharacterLearningProgressV1UseCase(learningProgressRepo),
+    listProgress: new ListByCharacterLearningProgressV1UseCase(learningProgressRepo),
   });
 
   // — Global error handler —
