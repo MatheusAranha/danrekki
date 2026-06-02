@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "setup": "bash scripts/setup.sh",
-    "dev:api": "nx serve api",
-    "dev:web": "nx serve web",
+    "seed:admin": "tsx --tsconfig apps/api/tsconfig.json scripts/seed-admin.ts",
+    "down": "bash scripts/down.sh",
+    "dev:api": "tsx watch --tsconfig apps/api/tsconfig.json apps/api/src/server.ts",
+    "dev:web": "vite --config apps/web/vite.config.ts",
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
     "lint": "nx run-many -t lint"
@@ -31,6 +33,7 @@
     "nx": "^20.3.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
+    "tsx": "^3.12.3",
     "typescript": "^5.4.5"
   }
 }

@@ -20,6 +20,9 @@ if ! command -v docker &>/dev/null; then
 fi
 
 if ! docker info &>/dev/null; then
+  if ! groups | grep -q docker; then
+    error "Cannot connect to Docker. Your user is not in the 'docker' group.\n  Run: sudo usermod -aG docker \$USER\n  Then log out and back in (or run: newgrp docker)"
+  fi
   error "Docker daemon is not running. Start Docker and try again."
 fi
 
@@ -46,8 +49,16 @@ pnpm install
 
 # ── 3. MongoDB ReplicaSet container ──────────────────────────────────────────
 
-if docker ps --format '{{.Names}}' | grep -q "^${MONGO_CONTAINER}$"; then
-  info "MongoDB container '${MONGO_CONTAINER}' is already running."
+# Check if another container is already using port 27017
+EXISTING_CONTAINER=$(docker ps --format '{{.Names}}\t{{.Ports}}' | grep "27017" | awk '{print $1}' | head -1 || true)
+
+if [ -n "${EXISTING_CONTAINER}" ]; then
+  if [ "${EXISTING_CONTAINER}" != "${MONGO_CONTAINER}" ]; then
+    info "Found existing MongoDB container '${EXISTING_CONTAINER}' on port ${MONGO_PORT} — using it."
+    MONGO_CONTAINER="${EXISTING_CONTAINER}"
+  else
+    info "MongoDB container '${MONGO_CONTAINER}' is already running."
+  fi
 else
   if docker ps -a --format '{{.Names}}' | grep -q "^${MONGO_CONTAINER}$"; then
     info "Starting existing MongoDB container '${MONGO_CONTAINER}'..."
@@ -58,6 +69,7 @@ else
       --name "${MONGO_CONTAINER}" \
       -p "${MONGO_PORT}:27017" \
       --restart unless-stopped \
+      --label com.danrekki=true \
       mongo:6 \
       --replSet rs0
   fi
@@ -81,7 +93,8 @@ RS_STATUS=$(docker exec "${MONGO_CONTAINER}" mongosh --quiet --eval \
 
 if [ "${RS_STATUS}" != "1" ]; then
   info "Initialising ReplicaSet..."
-  docker exec "${MONGO_CONTAINER}" mongosh --quiet --eval "rs.initiate()" &>/dev/null
+  docker exec "${MONGO_CONTAINER}" mongosh --quiet --eval \
+    "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]})" &>/dev/null
   sleep 3
   info "ReplicaSet initialised."
 else
