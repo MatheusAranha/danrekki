@@ -9,7 +9,7 @@ class JutsuV1Factory {
       _id: randomUUID(),
       name: faker.word.noun(),
       jutsu_rank_id: randomUUID(),
-      release_id: randomUUID(),
+      keyword_ids: [],
       elements: [],
       components: faker.lorem.words(3),
       duration: faker.lorem.word(),

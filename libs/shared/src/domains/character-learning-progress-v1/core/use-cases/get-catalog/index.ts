@@ -11,7 +11,7 @@ import { SenseiContentV1DatabaseRepository } from '../../../../sensei-content-v1
 import { TrainableContentV1DatabaseRepository } from '../../../../trainable-content-v1/core/database-repository';
 import { JutsuV1DatabaseRepository } from '../../../../jutsu-v1/core/database-repository';
 import { ClanV1DatabaseRepository } from '../../../../clan-v1/core/database-repository';
-import { CharacterReleaseV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
+import { CharacterKeywordV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
 import { calculateDtCost } from '../../services/calculate-dt-cost';
 import { JutsuElement } from '../../../../jutsu-v1/core/types';
 import { IJutsuV1Dto } from '../../../../jutsu-v1/core/types';
@@ -43,7 +43,7 @@ export class GetTrainingCatalogV1UseCase {
     private readonly contentRepo: TrainableContentV1DatabaseRepository,
     private readonly jutsuRepo: JutsuV1DatabaseRepository,
     private readonly clanRepo: ClanV1DatabaseRepository,
-    private readonly characterReleaseRepo: CharacterReleaseV1DatabaseRepository,
+    private readonly characterKeywordRepo: CharacterKeywordV1DatabaseRepository,
   ) {}
 
   async execute(inputDto: IGetTrainingCatalogV1UseCaseInputDto): Promise<IGetTrainingCatalogV1UseCaseOutputDto> {
@@ -60,9 +60,9 @@ export class GetTrainingCatalogV1UseCase {
       log.steps.push({ message: `Character ${inputDto.character_id} found.` });
 
       const clan = character.clan_id ? await this.clanRepo.findById(character.clan_id) : null;
-      const characterReleases = await this.characterReleaseRepo.findByCharacterId(inputDto.character_id);
-      const releaseIds = characterReleases.map((r) => r.release_id);
-      log.steps.push({ message: `Retrieved clan and ${releaseIds.length} release(s) for dt_cost calculation.` });
+      const characterKeywords = await this.characterKeywordRepo.findByCharacterId(inputDto.character_id);
+      const keywordIds = characterKeywords.map((r) => r.keyword_id);
+      log.steps.push({ message: `Retrieved clan and ${keywordIds.length} keyword(s) for dt_cost calculation.` });
 
       const allProgress = await this.progressRepo.findByCharacterId(inputDto.character_id);
       const progressByContentId = new Map<string, ICharacterLearningProgressV1Dto>(
@@ -88,7 +88,7 @@ export class GetTrainingCatalogV1UseCase {
 
           if (!includeIneligible && !this.isJutsuEligible(jutsu.elements, affinities)) continue;
 
-          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], releaseIds);
+          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
           libraryEntries.push({
             trainable_content: content,
             jutsu,
@@ -119,7 +119,7 @@ export class GetTrainingCatalogV1UseCase {
             if (!includeIneligible && jutsu && !this.isJutsuEligible(jutsu.elements, affinities)) continue;
           }
 
-          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], releaseIds);
+          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
           senseiEntries.push({
             trainable_content: content,
             jutsu,

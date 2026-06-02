@@ -13,7 +13,7 @@ const inputClass =
   'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500';
 
 interface DtModifier {
-  release_id: string;
+  keyword_id: string;
   multiplier: number;
 }
 
@@ -36,7 +36,7 @@ function ClanForm({
   );
 
   const addModifier = () =>
-    setModifiers((m) => [...m, { release_id: '', multiplier: 1.0 }]);
+    setModifiers((m) => [...m, { keyword_id: '', multiplier: 1.0 }]);
 
   const removeModifier = (idx: number) =>
     setModifiers((m) => m.filter((_, i) => i !== idx));
@@ -77,8 +77,8 @@ function ClanForm({
           <div key={idx} className="flex items-center gap-2">
             <select
               className={`${inputClass} flex-1`}
-              value={mod.release_id}
-              onChange={(e) => updateModifier(idx, 'release_id', e.target.value)}
+              value={mod.keyword_id}
+              onChange={(e) => updateModifier(idx, 'keyword_id', e.target.value)}
               required
             >
               <option value="" disabled>

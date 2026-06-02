@@ -1,7 +1,7 @@
-import { IReleaseV1Dto } from '../../types';
+import { IKeywordV1Dto } from '../../types';
 
-export interface ICreateReleaseV1UseCaseInputDto {
+export interface ICreateKeywordV1UseCaseInputDto {
   name: string;
 }
 
-export type ICreateReleaseV1UseCaseOutputDto = IReleaseV1Dto;
+export type ICreateKeywordV1UseCaseOutputDto = IKeywordV1Dto;

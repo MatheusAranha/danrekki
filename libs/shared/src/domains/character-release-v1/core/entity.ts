@@ -1,20 +1,20 @@
 import { schemaValidator } from '../../../_shared/validators/json-schema-validator';
-import { characterReleaseV1EntityJsonSchema } from './entity.schema';
-import { ICharacterReleaseV1Dto } from './types';
+import { characterKeywordV1EntityJsonSchema } from './entity.schema';
+import { ICharacterKeywordV1Dto } from './types';
 
-export class CharacterReleaseV1Entity {
-  private readonly dto: ICharacterReleaseV1Dto;
+export class CharacterKeywordV1Entity {
+  private readonly dto: ICharacterKeywordV1Dto;
 
-  constructor({ characterReleaseInputData }: { characterReleaseInputData: ICharacterReleaseV1Dto }) {
-    this.dto = characterReleaseInputData;
+  constructor({ characterKeywordInputData }: { characterKeywordInputData: ICharacterKeywordV1Dto }) {
+    this.dto = characterKeywordInputData;
   }
 
   validate(): this {
-    schemaValidator.validateOrReject(characterReleaseV1EntityJsonSchema, this.dto);
+    schemaValidator.validateOrReject(characterKeywordV1EntityJsonSchema, this.dto);
     return this;
   }
 
-  getDto(): ICharacterReleaseV1Dto {
+  getDto(): ICharacterKeywordV1Dto {
     return structuredClone(this.dto);
   }
 }

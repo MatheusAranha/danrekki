@@ -17,13 +17,13 @@ import { ListClansV1UseCase } from '@danrekki/shared/domains/clan-v1/core/use-ca
 import { UpdateClanV1UseCase } from '@danrekki/shared/domains/clan-v1/core/use-cases/update';
 import { DeleteClanV1UseCase } from '@danrekki/shared/domains/clan-v1/core/use-cases/delete';
 
-import { MongoReleaseV1DatabaseRepository } from '@danrekki/shared/domains/release-v1/adapters/mongo-release-v1-database-repository';
-import { registerReleaseV1Routes } from '@danrekki/shared/domains/release-v1/adapters/express-release-v1.controller';
-import { CreateReleaseV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/create';
-import { GetReleaseV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/get';
-import { ListReleasesV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/list';
-import { UpdateReleaseV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/update';
-import { DeleteReleaseV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/delete';
+import { MongoKeywordV1DatabaseRepository } from '@danrekki/shared/domains/release-v1/adapters/mongo-release-v1-database-repository';
+import { registerKeywordV1Routes } from '@danrekki/shared/domains/release-v1/adapters/express-release-v1.controller';
+import { CreateKeywordV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/create';
+import { GetKeywordV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/get';
+import { ListKeywordsV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/list';
+import { UpdateKeywordV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/update';
+import { DeleteKeywordV1UseCase } from '@danrekki/shared/domains/release-v1/core/use-cases/delete';
 
 import { MongoJutsuRankV1DatabaseRepository } from '@danrekki/shared/domains/jutsu-rank-v1/adapters/mongo-jutsu-rank-v1-database-repository';
 import { registerJutsuRankV1Routes } from '@danrekki/shared/domains/jutsu-rank-v1/adapters/express-jutsu-rank-v1.controller';
@@ -66,11 +66,11 @@ import { ListCharactersV1UseCase } from '@danrekki/shared/domains/character-v1/c
 import { UpdateCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/update';
 import { DeleteCharacterV1UseCase } from '@danrekki/shared/domains/character-v1/core/use-cases/delete';
 
-import { MongoCharacterReleaseV1DatabaseRepository } from '@danrekki/shared/domains/character-release-v1/adapters/mongo-character-release-v1-database-repository';
-import { registerCharacterReleaseV1Routes } from '@danrekki/shared/domains/character-release-v1/adapters/express-character-release-v1.controller';
-import { AssignCharacterReleaseV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/assign';
-import { RevokeCharacterReleaseV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/revoke';
-import { ListByCharacterCharacterReleaseV1UseCase as ListCharacterReleasesV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/list-by-character';
+import { MongoCharacterKeywordV1DatabaseRepository } from '@danrekki/shared/domains/character-release-v1/adapters/mongo-character-release-v1-database-repository';
+import { registerCharacterKeywordV1Routes } from '@danrekki/shared/domains/character-release-v1/adapters/express-character-release-v1.controller';
+import { AssignCharacterKeywordV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/assign';
+import { RevokeCharacterKeywordV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/revoke';
+import { ListByCharacterCharacterKeywordV1UseCase as ListCharacterKeywordsV1UseCase } from '@danrekki/shared/domains/character-release-v1/core/use-cases/list-by-character';
 
 import { MongoLibraryV1DatabaseRepository } from '@danrekki/shared/domains/library-v1/adapters/mongo-library-v1-database-repository';
 import { registerLibraryV1Routes } from '@danrekki/shared/domains/library-v1/adapters/express-library-v1.controller';
@@ -171,13 +171,13 @@ export function createApp(db: Db) {
     deleteClan: new DeleteClanV1UseCase(clanRepo),
   });
 
-  const releaseRepo = new MongoReleaseV1DatabaseRepository(db);
-  registerReleaseV1Routes(app, {
-    createRelease: new CreateReleaseV1UseCase(releaseRepo),
-    getRelease: new GetReleaseV1UseCase(releaseRepo),
-    listReleases: new ListReleasesV1UseCase(releaseRepo),
-    updateRelease: new UpdateReleaseV1UseCase(releaseRepo),
-    deleteRelease: new DeleteReleaseV1UseCase(releaseRepo),
+  const keywordRepo = new MongoKeywordV1DatabaseRepository(db);
+  registerKeywordV1Routes(app, {
+    createKeyword: new CreateKeywordV1UseCase(keywordRepo),
+    getKeyword: new GetKeywordV1UseCase(keywordRepo),
+    listKeywords: new ListKeywordsV1UseCase(keywordRepo),
+    updateKeyword: new UpdateKeywordV1UseCase(keywordRepo),
+    deleteKeyword: new DeleteKeywordV1UseCase(keywordRepo),
   });
 
   const jutsuRankRepo = new MongoJutsuRankV1DatabaseRepository(db);
@@ -217,11 +217,11 @@ export function createApp(db: Db) {
     deleteCharacter: new DeleteCharacterV1UseCase(characterRepo),
   });
 
-  const characterReleaseRepo = new MongoCharacterReleaseV1DatabaseRepository(db);
-  registerCharacterReleaseV1Routes(app, {
-    assignRelease: new AssignCharacterReleaseV1UseCase(characterReleaseRepo, characterRepo, releaseRepo),
-    revokeRelease: new RevokeCharacterReleaseV1UseCase(characterReleaseRepo),
-    listCharacterReleases: new ListCharacterReleasesV1UseCase(characterReleaseRepo),
+  const characterKeywordRepo = new MongoCharacterKeywordV1DatabaseRepository(db);
+  registerCharacterKeywordV1Routes(app, {
+    assignKeyword: new AssignCharacterKeywordV1UseCase(characterKeywordRepo, characterRepo, keywordRepo),
+    revokeKeyword: new RevokeCharacterKeywordV1UseCase(characterKeywordRepo),
+    listCharacterKeywords: new ListCharacterKeywordsV1UseCase(characterKeywordRepo),
   });
 
   // — Libraries —
@@ -305,7 +305,7 @@ export function createApp(db: Db) {
       characterRepo,
       trainableContentRepo,
       clanRepo,
-      characterReleaseRepo,
+      characterKeywordRepo,
       characterLibraryRepo,
       libraryScrollRepo,
       characterSenseiRepo,
@@ -324,7 +324,7 @@ export function createApp(db: Db) {
       trainableContentRepo,
       jutsuRepo,
       clanRepo,
-      characterReleaseRepo,
+      characterKeywordRepo,
     ),
   });
 

@@ -1,3 +1,3 @@
-export interface IDeleteReleaseV1UseCaseInputDto {
+export interface IDeleteKeywordV1UseCaseInputDto {
   id: string;
 }

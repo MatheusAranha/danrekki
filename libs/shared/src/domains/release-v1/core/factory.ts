@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { randomUUID } from 'crypto';
-import { IReleaseV1Dto } from './types';
+import { IKeywordV1Dto } from './types';
 
-class ReleaseV1Factory {
-  generateOne(params?: { overrides?: Partial<IReleaseV1Dto> }): IReleaseV1Dto {
+class KeywordV1Factory {
+  generateOne(params?: { overrides?: Partial<IKeywordV1Dto> }): IKeywordV1Dto {
     const now = new Date().toISOString();
     return {
       _id: randomUUID(),
@@ -15,4 +15,4 @@ class ReleaseV1Factory {
   }
 }
 
-export const releaseV1Factory = new ReleaseV1Factory();
+export const keywordV1Factory = new KeywordV1Factory();

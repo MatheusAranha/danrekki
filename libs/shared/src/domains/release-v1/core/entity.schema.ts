@@ -1,4 +1,4 @@
-export const releaseV1EntityJsonSchema = {
+export const keywordV1EntityJsonSchema = {
   type: 'object',
   required: ['_id', 'name', 'created_at', 'updated_at'],
   additionalProperties: false,

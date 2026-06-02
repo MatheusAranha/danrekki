@@ -3,7 +3,7 @@ import { apiClient } from './client';
 export interface Clan {
   _id: string;
   name: string;
-  dt_modifiers: { release_id: string; multiplier: number }[];
+  dt_modifiers: { keyword_id: string; multiplier: number }[];
   created_at: string;
   updated_at: string;
 }

@@ -6,7 +6,7 @@ export interface IJutsuV1Dto {
   _id: string;
   name: string;
   jutsu_rank_id: string;
-  release_id: string;
+  keyword_ids: string[];
   elements: JutsuElement[];
   components: string;
   duration: string;

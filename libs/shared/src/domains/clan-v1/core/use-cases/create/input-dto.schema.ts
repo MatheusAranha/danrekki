@@ -8,10 +8,10 @@ export const createClanV1InputDtoJsonSchema = {
       type: 'array',
       items: {
         type: 'object',
-        required: ['release_id', 'multiplier'],
+        required: ['keyword_id', 'multiplier'],
         additionalProperties: false,
         properties: {
-          release_id: { type: 'string', minLength: 1 },
+          keyword_id: { type: 'string', minLength: 1 },
           multiplier: { type: 'number', exclusiveMinimum: 0, maximum: 1 },
         },
       },

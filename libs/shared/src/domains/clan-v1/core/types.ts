@@ -1,5 +1,5 @@
 export interface IClanV1DtModifier {
-  release_id: string;
+  keyword_id: string;
   multiplier: number;
 }
 

@@ -1,2 +1,2 @@
-export class CharacterReleaseV1NotFoundError extends Error {}
-export class CharacterReleaseV1AlreadyAssignedError extends Error {}
+export class CharacterKeywordV1NotFoundError extends Error {}
+export class CharacterKeywordV1AlreadyAssignedError extends Error {}

@@ -29,7 +29,7 @@ export class UpdateJutsuV1UseCase {
       const updated = await this.jutsuRepository.update(inputDto.id, {
         ...(inputDto.name !== undefined && { name: inputDto.name }),
         ...(inputDto.jutsu_rank_id !== undefined && { jutsu_rank_id: inputDto.jutsu_rank_id }),
-        ...(inputDto.release_id !== undefined && { release_id: inputDto.release_id }),
+        ...(inputDto.keyword_ids !== undefined && { keyword_ids: inputDto.keyword_ids }),
         ...(inputDto.components !== undefined && { components: inputDto.components }),
         ...(inputDto.duration !== undefined && { duration: inputDto.duration }),
         ...(inputDto.description !== undefined && { description: inputDto.description }),

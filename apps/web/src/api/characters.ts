@@ -11,10 +11,10 @@ export interface Character {
   updated_at: string;
 }
 
-export interface CharacterRelease {
+export interface CharacterKeyword {
   _id: string;
   character_id: string;
-  release_id: string;
+  keyword_id: string;
   created_at: string;
 }
 
@@ -60,7 +60,7 @@ export interface Jutsu {
   _id: string;
   name: string;
   jutsu_rank_id: string;
-  release_id: string;
+  keyword_id: string;
   elements: string[];
   components: string;
   duration: string;
@@ -97,14 +97,14 @@ export const charactersApi = {
   get: (id: string) =>
     apiClient.get<Character>(`/characters/${id}`).then((r) => r.data),
 
-  getReleases: (id: string) =>
+  getKeywords: (id: string) =>
     apiClient
-      .get<CharacterRelease[]>(`/characters/${id}/releases`)
+      .get<CharacterKeyword[]>(`/characters/${id}/keywords`)
       .then((r) => r.data),
-  assignRelease: (id: string, body: { release_id: string }) =>
-    apiClient.post(`/characters/${id}/releases`, body).then((r) => r.data),
-  revokeRelease: (charId: string, releaseId: string) =>
-    apiClient.delete(`/characters/${charId}/releases/${releaseId}`),
+  assignKeyword: (id: string, body: { keyword_id: string }) =>
+    apiClient.post(`/characters/${id}/keywords`, body).then((r) => r.data),
+  revokeKeyword: (charId: string, keywordAssignId: string) =>
+    apiClient.delete(`/characters/${charId}/keywords/${releaseId}`),
 
   getLibraries: (id: string) =>
     apiClient

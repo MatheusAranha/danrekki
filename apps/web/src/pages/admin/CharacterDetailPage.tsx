@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import {
   charactersApi,
   Character,
-  CharacterRelease,
+  CharacterKeyword,
   CharacterLibrary,
   CharacterSensei,
   LearningProgress,
@@ -52,7 +52,7 @@ export function CharacterDetailPage() {
   const [allContents, setAllContents] = useState<TrainableContent[]>([]);
 
   // Character data
-  const [charReleases, setCharReleases] = useState<CharacterRelease[]>([]);
+  const [charKeywords, setCharReleases] = useState<CharacterKeyword[]>([]);
   const [charLibraries, setCharLibraries] = useState<CharacterLibrary[]>([]);
   const [charSenseis, setCharSenseis] = useState<CharacterSensei[]>([]);
   const [progress, setProgress] = useState<LearningProgress[]>([]);
@@ -63,18 +63,18 @@ export function CharacterDetailPage() {
   const [dtLoading, setDtLoading] = useState(false);
 
   // Add modals
-  const [addReleaseId, setAddReleaseId] = useState('');
+  const [addKeywordId, setAddReleaseId] = useState('');
   const [addLibraryId, setAddLibraryId] = useState('');
   const [addLibraryRankId, setAddLibraryRankId] = useState('');
   const [addSenseiId, setAddSenseiId] = useState('');
   const [addSenseiProximity, setAddSenseiProximity] = useState(1);
-  const [releaseModalOpen, setReleaseModalOpen] = useState(false);
+  const [keywordModalOpen, setKeywordModalOpen] = useState(false);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [senseiModalOpen, setSenseiModalOpen] = useState(false);
   const [addingSaving, setAddingSaving] = useState(false);
 
   // Delete confirm
-  const [deleteReleaseTarget, setDeleteReleaseTarget] = useState<CharacterRelease | null>(null);
+  const [deleteKeywordTarget, setDeleteKeywordTarget] = useState<CharacterKeyword | null>(null);
   const [deleteLibraryTarget, setDeleteLibraryTarget] = useState<CharacterLibrary | null>(null);
   const [deleteSenseiTarget, setDeleteSenseiTarget] = useState<CharacterSensei | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -152,14 +152,14 @@ export function CharacterDetailPage() {
     }
   };
 
-  const handleAssignRelease = async (e: FormEvent) => {
+  const handleAssignKeyword = async (e: FormEvent) => {
     e.preventDefault();
     if (!characterId) return;
     setAddingSaving(true);
     try {
-      await charactersApi.assignRelease(characterId, { release_id: addReleaseId });
-      show('Release assigned');
-      setReleaseModalOpen(false);
+      await charactersApi.assignKeyword(characterId, { keyword_id: addKeywordId });
+      show('Keyword assigned');
+      setKeywordModalOpen(false);
       setAddReleaseId('');
       await refreshCharacter();
     } catch (err: unknown) {
@@ -170,13 +170,13 @@ export function CharacterDetailPage() {
     }
   };
 
-  const handleRevokeRelease = async () => {
-    if (!deleteReleaseTarget || !characterId) return;
+  const handleRevokeKeyword = async () => {
+    if (!deleteKeywordTarget || !characterId) return;
     setDeleting(true);
     try {
-      await charactersApi.revokeRelease(characterId, deleteReleaseTarget._id);
-      show('Release removed');
-      setDeleteReleaseTarget(null);
+      await charactersApi.revokeKeyword(characterId, deleteKeywordTarget._id);
+      show('Keyword removed');
+      setDeleteKeywordTarget(null);
       await refreshCharacter();
     } catch (err: unknown) {
       const ex = err as { response?: { data?: { error?: string } }; message?: string };
@@ -262,13 +262,13 @@ export function CharacterDetailPage() {
     }
   };
 
-  const releaseMap = Object.fromEntries(releases.map((r) => [r._id, r.name]));
+  const keywordMap = Object.fromEntries(releases.map((r) => [r._id, r.name]));
   const libraryMap = Object.fromEntries(libraries.map((l) => [l._id, l.name]));
   const rankMap = Object.fromEntries(ninjaRanks.map((r) => [r._id, r.name]));
   const senseiMap = Object.fromEntries(senseis.map((s) => [s._id, s.name]));
   const contentMap = Object.fromEntries(allContents.map((c) => [c._id, c]));
 
-  const assignedReleaseIds = new Set(charReleases.map((r) => r.release_id));
+  const assignedReleaseIds = new Set(charKeywords.map((r) => r.keyword_id));
   const unassignedReleases = releases.filter((r) => !assignedReleaseIds.has(r._id));
 
   if (loading) {
@@ -360,27 +360,27 @@ export function CharacterDetailPage() {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-base font-semibold text-gray-200">Assigned Releases</h2>
-            <Button size="sm" onClick={() => setReleaseModalOpen(true)}>+ Assign Release</Button>
+            <Button size="sm" onClick={() => setKeywordModalOpen(true)}>+ Assign Keyword</Button>
           </div>
           <div className="overflow-x-auto rounded-xl border border-gray-800">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-900 border-b border-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Release</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Keyword</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Assigned At</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {charReleases.length === 0 ? (
+                {charKeywords.length === 0 ? (
                   <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No releases assigned.</td></tr>
-                ) : charReleases.map((cr) => (
+                ) : charKeywords.map((cr) => (
                   <tr key={cr._id} className="border-b border-gray-800/50 hover:bg-gray-800/50">
-                    <td className="px-4 py-3 text-gray-200">{releaseMap[cr.release_id] ?? cr.release_id}</td>
+                    <td className="px-4 py-3 text-gray-200">{keywordMap[cr.keyword_id] ?? cr.keyword_id}</td>
                     <td className="px-4 py-3 text-gray-400">{new Date(cr.created_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => setDeleteReleaseTarget(cr)}
+                        onClick={() => setDeleteKeywordTarget(cr)}
                         className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-lg transition-colors"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -520,17 +520,17 @@ export function CharacterDetailPage() {
         </div>
       )}
 
-      {/* Release modal */}
-      <Modal isOpen={releaseModalOpen} title="Assign Release" onClose={() => setReleaseModalOpen(false)} size="sm">
-        <form onSubmit={handleAssignRelease} className="flex flex-col gap-4">
-          <FormField label="Release" required>
-            <select className={inputClass} value={addReleaseId} onChange={(e) => setAddReleaseId(e.target.value)} required>
-              <option value="" disabled>Select release...</option>
+      {/* Keyword modal */}
+      <Modal isOpen={keywordModalOpen} title="Assign Keyword" onClose={() => setKeywordModalOpen(false)} size="sm">
+        <form onSubmit={handleAssignKeyword} className="flex flex-col gap-4">
+          <FormField label="Keyword" required>
+            <select className={inputClass} value={addKeywordId} onChange={(e) => setAddReleaseId(e.target.value)} required>
+              <option value="" disabled>Select keyword...</option>
               {unassignedReleases.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
             </select>
           </FormField>
           <div className="flex justify-end gap-3">
-            <Button variant="secondary" type="button" onClick={() => setReleaseModalOpen(false)}>Cancel</Button>
+            <Button variant="secondary" type="button" onClick={() => setKeywordModalOpen(false)}>Cancel</Button>
             <Button type="submit" loading={addingSaving}>Assign</Button>
           </div>
         </form>
@@ -587,11 +587,11 @@ export function CharacterDetailPage() {
 
       {/* Confirm dialogs */}
       <ConfirmDialog
-        isOpen={!!deleteReleaseTarget}
-        title="Remove Release"
-        message={`Remove release "${releaseMap[deleteReleaseTarget?.release_id ?? ''] ?? ''}" from this character?`}
-        onConfirm={handleRevokeRelease}
-        onCancel={() => setDeleteReleaseTarget(null)}
+        isOpen={!!deleteKeywordTarget}
+        title="Remove Keyword"
+        message={`Remove keyword "${keywordMap[deleteKeywordTarget?.keyword_id ?? ''] ?? ''}" from this character?`}
+        onConfirm={handleRevokeKeyword}
+        onCancel={() => setDeleteKeywordTarget(null)}
         loading={deleting}
       />
       <ConfirmDialog

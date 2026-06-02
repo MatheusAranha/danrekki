@@ -1,12 +1,12 @@
 import { randomUUID } from 'crypto';
-import { ICharacterReleaseV1Dto } from './types';
+import { ICharacterKeywordV1Dto } from './types';
 
 class CharacterReleaseV1Factory {
-  generateOne(params?: { overrides?: Partial<ICharacterReleaseV1Dto> }): ICharacterReleaseV1Dto {
+  generateOne(params?: { overrides?: Partial<ICharacterKeywordV1Dto> }): ICharacterKeywordV1Dto {
     return {
       _id: randomUUID(),
       character_id: randomUUID(),
-      release_id: randomUUID(),
+      keyword_id: randomUUID(),
       created_at: new Date().toISOString(),
       ...params?.overrides,
     };

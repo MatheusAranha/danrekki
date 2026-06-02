@@ -1,8 +1,8 @@
-import { ICharacterReleaseV1Dto } from '../../types';
+import { ICharacterKeywordV1Dto } from '../../types';
 
-export interface IAssignCharacterReleaseV1UseCaseInputDto {
+export interface IAssignCharacterKeywordV1UseCaseInputDto {
   character_id: string;
-  release_id: string;
+  keyword_id: string;
 }
 
-export type IAssignCharacterReleaseV1UseCaseOutputDto = ICharacterReleaseV1Dto;
+export type IAssignCharacterKeywordV1UseCaseOutputDto = ICharacterKeywordV1Dto;

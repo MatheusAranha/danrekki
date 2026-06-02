@@ -1,33 +1,33 @@
 import { Collection, Db } from 'mongodb';
-import { CharacterReleaseV1DatabaseRepository } from '../core/database-repository';
-import { ICharacterReleaseV1Dto } from '../core/types';
+import { CharacterKeywordV1DatabaseRepository } from '../core/database-repository';
+import { ICharacterKeywordV1Dto } from '../core/types';
 
-type CharacterReleaseDoc = Omit<ICharacterReleaseV1Dto, '_id'> & { _id: string };
+type CharacterReleaseDoc = Omit<ICharacterKeywordV1Dto, '_id'> & { _id: string };
 
-export class MongoCharacterReleaseV1DatabaseRepository extends CharacterReleaseV1DatabaseRepository {
+export class MongoCharacterKeywordV1DatabaseRepository extends CharacterKeywordV1DatabaseRepository {
   private readonly collection: Collection<CharacterReleaseDoc>;
 
   constructor(db: Db) {
     super();
-    this.collection = db.collection<CharacterReleaseDoc>('character_releases');
+    this.collection = db.collection<CharacterReleaseDoc>('character_keywords');
   }
 
-  async findById(id: string): Promise<ICharacterReleaseV1Dto | null> {
+  async findById(id: string): Promise<ICharacterKeywordV1Dto | null> {
     const doc = await this.collection.findOne({ _id: id } as never);
-    return doc ? (doc as unknown as ICharacterReleaseV1Dto) : null;
+    return doc ? (doc as unknown as ICharacterKeywordV1Dto) : null;
   }
 
-  async findByCharacterId(characterId: string): Promise<ICharacterReleaseV1Dto[]> {
+  async findByCharacterId(characterId: string): Promise<ICharacterKeywordV1Dto[]> {
     const docs = await this.collection.find({ character_id: characterId } as never).toArray();
-    return docs as unknown as ICharacterReleaseV1Dto[];
+    return docs as unknown as ICharacterKeywordV1Dto[];
   }
 
-  async findByCharacterAndRelease(characterId: string, releaseId: string): Promise<ICharacterReleaseV1Dto | null> {
-    const doc = await this.collection.findOne({ character_id: characterId, release_id: releaseId } as never);
-    return doc ? (doc as unknown as ICharacterReleaseV1Dto) : null;
+  async findByCharacterAndKeyword(characterId: string, releaseId: string): Promise<ICharacterKeywordV1Dto | null> {
+    const doc = await this.collection.findOne({ character_id: characterId, keyword_id: releaseId } as never);
+    return doc ? (doc as unknown as ICharacterKeywordV1Dto) : null;
   }
 
-  async save(dto: ICharacterReleaseV1Dto): Promise<ICharacterReleaseV1Dto> {
+  async save(dto: ICharacterKeywordV1Dto): Promise<ICharacterKeywordV1Dto> {
     await this.collection.insertOne(dto as unknown as CharacterReleaseDoc);
     return dto;
   }

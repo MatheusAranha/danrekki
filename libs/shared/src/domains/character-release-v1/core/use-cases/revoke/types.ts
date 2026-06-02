@@ -1,3 +1,3 @@
-export interface IRevokeCharacterReleaseV1UseCaseInputDto {
+export interface IRevokeCharacterKeywordV1UseCaseInputDto {
   id: string;
 }

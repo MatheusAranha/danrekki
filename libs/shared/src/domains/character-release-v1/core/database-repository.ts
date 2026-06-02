@@ -1,9 +1,9 @@
-import { ICharacterReleaseV1Dto } from './types';
+import { ICharacterKeywordV1Dto } from './types';
 
-export abstract class CharacterReleaseV1DatabaseRepository {
-  abstract findById(id: string): Promise<ICharacterReleaseV1Dto | null>;
-  abstract findByCharacterId(characterId: string): Promise<ICharacterReleaseV1Dto[]>;
-  abstract findByCharacterAndRelease(characterId: string, releaseId: string): Promise<ICharacterReleaseV1Dto | null>;
-  abstract save(dto: ICharacterReleaseV1Dto): Promise<ICharacterReleaseV1Dto>;
+export abstract class CharacterKeywordV1DatabaseRepository {
+  abstract findById(id: string): Promise<ICharacterKeywordV1Dto | null>;
+  abstract findByCharacterId(characterId: string): Promise<ICharacterKeywordV1Dto[]>;
+  abstract findByCharacterAndKeyword(characterId: string, releaseId: string): Promise<ICharacterKeywordV1Dto | null>;
+  abstract save(dto: ICharacterKeywordV1Dto): Promise<ICharacterKeywordV1Dto>;
   abstract delete(id: string): Promise<boolean>;
 }

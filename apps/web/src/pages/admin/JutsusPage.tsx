@@ -17,7 +17,7 @@ const textareaClass = `${inputClass} resize-y min-h-[80px]`;
 interface JutsuFormData {
   name: string;
   jutsu_rank_id: string;
-  release_id: string;
+  keyword_ids: string[];
   components: string;
   duration: string;
   description: string;
@@ -26,14 +26,14 @@ interface JutsuFormData {
 function JutsuForm({
   initial,
   jutsuRanks,
-  releases,
+  keywords,
   onSave,
   onCancel,
   saving,
 }: {
   initial?: Jutsu;
   jutsuRanks: JutsuRank[];
-  releases: Release[];
+  keywords: Release[];
   onSave: (data: JutsuFormData) => void;
   onCancel: () => void;
   saving: boolean;
@@ -41,15 +41,24 @@ function JutsuForm({
   const [form, setForm] = useState<JutsuFormData>({
     name: initial?.name ?? '',
     jutsu_rank_id: initial?.jutsu_rank_id ?? '',
-    release_id: initial?.release_id ?? '',
+    keyword_ids: initial?.keyword_ids ?? [],
     components: initial?.components ?? '',
     duration: initial?.duration ?? '',
     description: initial?.description ?? '',
   });
 
-  const set = (field: keyof JutsuFormData) => (
+  const set = (field: keyof Omit<JutsuFormData, 'keyword_ids'>) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const toggleKeyword = (id: string) => {
+    setForm((f) => ({
+      ...f,
+      keyword_ids: f.keyword_ids.includes(id)
+        ? f.keyword_ids.filter((k) => k !== id)
+        : [...f.keyword_ids, id],
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,20 +70,31 @@ function JutsuForm({
       <FormField label="Name" required>
         <input className={inputClass} value={form.name} onChange={set('name')} placeholder="Fireball Jutsu" required />
       </FormField>
-      <div className="grid grid-cols-2 gap-4">
-        <FormField label="Jutsu Rank" required>
-          <select className={inputClass} value={form.jutsu_rank_id} onChange={set('jutsu_rank_id')} required>
-            <option value="" disabled>Select rank...</option>
-            {jutsuRanks.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
-          </select>
-        </FormField>
-        <FormField label="Release" required>
-          <select className={inputClass} value={form.release_id} onChange={set('release_id')} required>
-            <option value="" disabled>Select release...</option>
-            {releases.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
-          </select>
-        </FormField>
-      </div>
+      <FormField label="Jutsu Rank" required>
+        <select className={inputClass} value={form.jutsu_rank_id} onChange={set('jutsu_rank_id')} required>
+          <option value="" disabled>Select rank...</option>
+          {jutsuRanks.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
+        </select>
+      </FormField>
+      <FormField label="Keywords">
+        <div className="flex flex-wrap gap-2 pt-1">
+          {keywords.map((k) => (
+            <button
+              key={k._id}
+              type="button"
+              onClick={() => toggleKeyword(k._id)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                form.keyword_ids.includes(k._id)
+                  ? 'bg-orange-500 border-orange-500 text-white'
+                  : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-orange-500'
+              }`}
+            >
+              {k.name}
+            </button>
+          ))}
+          {keywords.length === 0 && <span className="text-gray-500 text-sm">No keywords yet.</span>}
+        </div>
+      </FormField>
       <FormField label="Components" required>
         <input className={inputClass} value={form.components} onChange={set('components')} placeholder="Hand seals, chakra" required />
       </FormField>
@@ -96,7 +116,7 @@ export function JutsusPage() {
   const { show } = useToastStore();
   const [jutsus, setJutsus] = useState<Jutsu[]>([]);
   const [jutsuRanks, setJutsuRanks] = useState<JutsuRank[]>([]);
-  const [releases, setReleases] = useState<Release[]>([]);
+  const [keywords, setKeywords] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Jutsu | null>(null);
@@ -107,14 +127,14 @@ export function JutsusPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [j, jr, r] = await Promise.all([
+      const [j, jr, k] = await Promise.all([
         jutsusApi.list(),
         jutsuRanksApi.list(),
         releasesApi.list(),
       ]);
       setJutsus(j);
       setJutsuRanks(jr);
-      setReleases(r);
+      setKeywords(k);
     } catch {
       show('Failed to load jutsus', 'error');
     } finally {
@@ -165,7 +185,7 @@ export function JutsusPage() {
   };
 
   const rankMap = Object.fromEntries(jutsuRanks.map((r) => [r._id, r.name]));
-  const releaseMap = Object.fromEntries(releases.map((r) => [r._id, r.name]));
+  const keywordMap = Object.fromEntries(keywords.map((k) => [k._id, k.name]));
 
   const columns: Column<Jutsu>[] = [
     { key: 'name', label: 'Name' },
@@ -175,9 +195,19 @@ export function JutsusPage() {
       render: (j) => <span className="text-gray-300">{rankMap[j.jutsu_rank_id] ?? j.jutsu_rank_id}</span>,
     },
     {
-      key: 'release_id',
-      label: 'Release',
-      render: (j) => <span className="text-gray-300">{releaseMap[j.release_id] ?? j.release_id}</span>,
+      key: 'keyword_ids',
+      label: 'Keywords',
+      render: (j) => (
+        <div className="flex flex-wrap gap-1">
+          {j.keyword_ids.length === 0
+            ? <span className="text-gray-500">—</span>
+            : j.keyword_ids.map((id) => (
+                <span key={id} className="px-2 py-0.5 rounded-full text-xs bg-orange-500/20 text-orange-300">
+                  {keywordMap[id] ?? id}
+                </span>
+              ))}
+        </div>
+      ),
     },
     { key: 'duration', label: 'Duration' },
   ];
@@ -206,7 +236,7 @@ export function JutsusPage() {
         <JutsuForm
           initial={editing ?? undefined}
           jutsuRanks={jutsuRanks}
-          releases={releases}
+          keywords={keywords}
           onSave={handleSave}
           onCancel={closeModal}
           saving={saving}

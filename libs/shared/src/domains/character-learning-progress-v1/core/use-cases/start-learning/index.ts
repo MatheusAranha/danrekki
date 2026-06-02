@@ -10,7 +10,7 @@ import { CharacterV1NotFoundError } from '../../../../character-v1/core/errors';
 import { TrainableContentV1DatabaseRepository } from '../../../../trainable-content-v1/core/database-repository';
 import { TrainableContentV1NotFoundError } from '../../../../trainable-content-v1/core/errors';
 import { ClanV1DatabaseRepository } from '../../../../clan-v1/core/database-repository';
-import { CharacterReleaseV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
+import { CharacterKeywordV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
 import { CharacterLibraryV1DatabaseRepository } from '../../../../character-library-v1/core/database-repository';
 import { LibraryScrollV1DatabaseRepository } from '../../../../library-scroll-v1/core/database-repository';
 import { CharacterSenseiV1DatabaseRepository } from '../../../../character-sensei-v1/core/database-repository';
@@ -34,7 +34,7 @@ export class StartLearningV1UseCase {
     private readonly characterRepo: CharacterV1DatabaseRepository,
     private readonly contentRepo: TrainableContentV1DatabaseRepository,
     private readonly clanRepo: ClanV1DatabaseRepository,
-    private readonly characterReleaseRepo: CharacterReleaseV1DatabaseRepository,
+    private readonly characterKeywordRepo: CharacterKeywordV1DatabaseRepository,
     private readonly characterLibraryRepo: CharacterLibraryV1DatabaseRepository,
     private readonly libraryScrollRepo: LibraryScrollV1DatabaseRepository,
     private readonly characterSenseiRepo: CharacterSenseiV1DatabaseRepository,
@@ -69,11 +69,11 @@ export class StartLearningV1UseCase {
       const clan = character.clan_id ? await this.clanRepo.findById(character.clan_id) : null;
       log.steps.push({ message: clan ? `Clan ${character.clan_id} found.` : 'No clan found, using empty modifiers.' });
 
-      const characterReleases = await this.characterReleaseRepo.findByCharacterId(inputDto.character_id);
-      const releaseIds = characterReleases.map((r) => r.release_id);
-      log.steps.push({ message: `Retrieved ${releaseIds.length} release(s) for character ${inputDto.character_id}.` });
+      const characterKeywords = await this.characterKeywordRepo.findByCharacterId(inputDto.character_id);
+      const keywordIds = characterKeywords.map((r) => r.keyword_id);
+      log.steps.push({ message: `Retrieved ${keywordIds.length} keyword(s) for character ${inputDto.character_id}.` });
 
-      const dtRequired = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], releaseIds);
+      const dtRequired = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
       log.steps.push({ message: `Calculated dt_required: ${dtRequired}.` });
 
       const now = new Date().toISOString();

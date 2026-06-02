@@ -5,7 +5,7 @@ import { JutsuElement } from '../../types';
 export interface ICreateJutsuV1UseCaseInputDto {
   name: string;
   jutsu_rank_id: string;
-  release_id: string;
+  keyword_ids: string[];
   elements?: JutsuElement[];
   components: string;
   duration: string;

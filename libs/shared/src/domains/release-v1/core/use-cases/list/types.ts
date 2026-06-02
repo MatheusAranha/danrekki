@@ -1,3 +1,3 @@
-import { IReleaseV1Dto } from '../../types';
+import { IKeywordV1Dto } from '../../types';
 
-export type IListReleasesV1UseCaseOutputDto = IReleaseV1Dto[];
+export type IListKeywordsV1UseCaseOutputDto = IKeywordV1Dto[];

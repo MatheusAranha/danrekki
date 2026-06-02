@@ -4,7 +4,7 @@ export interface Jutsu {
   _id: string;
   name: string;
   jutsu_rank_id: string;
-  release_id: string;
+  keyword_ids: string[];
   components: string;
   duration: string;
   description: string;
@@ -18,7 +18,7 @@ export const jutsusApi = {
   create: (body: {
     name: string;
     jutsu_rank_id: string;
-    release_id: string;
+    keyword_ids: string[];
     components: string;
     duration: string;
     description: string;
@@ -28,7 +28,7 @@ export const jutsusApi = {
     body: Partial<{
       name: string;
       jutsu_rank_id: string;
-      release_id: string;
+      keyword_ids: string[];
       components: string;
       duration: string;
       description: string;

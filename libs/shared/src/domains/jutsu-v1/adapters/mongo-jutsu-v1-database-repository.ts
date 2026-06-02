@@ -22,8 +22,8 @@ export class MongoJutsuV1DatabaseRepository extends JutsuV1DatabaseRepository {
     return doc ? (doc as unknown as IJutsuV1Dto) : null;
   }
 
-  async findByReleaseId(releaseId: string): Promise<IJutsuV1Dto[]> {
-    const docs = await this.collection.find({ release_id: releaseId } as never).toArray();
+  async findByKeywordId(keywordId: string): Promise<IJutsuV1Dto[]> {
+    const docs = await this.collection.find({ keyword_ids: keywordId } as never).toArray();
     return docs as unknown as IJutsuV1Dto[];
   }
 
@@ -44,7 +44,7 @@ export class MongoJutsuV1DatabaseRepository extends JutsuV1DatabaseRepository {
 
   async update(
     id: string,
-    updates: Partial<Pick<IJutsuV1Dto, 'name' | 'jutsu_rank_id' | 'release_id' | 'elements' | 'components' | 'duration' | 'description' | 'updated_at'>>,
+    updates: Partial<Pick<IJutsuV1Dto, 'name' | 'jutsu_rank_id' | 'keyword_ids' | 'elements' | 'components' | 'duration' | 'description' | 'updated_at'>>,
   ): Promise<IJutsuV1Dto | null> {
     const result = await this.collection.findOneAndUpdate(
       { _id: id } as never,

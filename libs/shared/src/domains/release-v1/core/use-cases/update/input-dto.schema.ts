@@ -1,4 +1,4 @@
-export const updateReleaseV1InputDtoJsonSchema = {
+export const updateKeywordV1InputDtoJsonSchema = {
   type: 'object',
   required: ['id'],
   additionalProperties: false,

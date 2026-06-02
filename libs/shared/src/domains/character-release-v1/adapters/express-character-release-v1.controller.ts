@@ -1,47 +1,47 @@
 import { Express } from 'express';
 import createHttpError from 'http-errors';
-import { AssignCharacterReleaseV1UseCase } from '../core/use-cases/assign';
-import { RevokeCharacterReleaseV1UseCase } from '../core/use-cases/revoke';
-import { ListByCharacterCharacterReleaseV1UseCase } from '../core/use-cases/list-by-character';
-import { CharacterReleaseV1NotFoundError, CharacterReleaseV1AlreadyAssignedError } from '../core/errors';
+import { AssignCharacterKeywordV1UseCase } from '../core/use-cases/assign';
+import { RevokeCharacterKeywordV1UseCase } from '../core/use-cases/revoke';
+import { ListByCharacterCharacterKeywordV1UseCase } from '../core/use-cases/list-by-character';
+import { CharacterKeywordV1NotFoundError, CharacterKeywordV1AlreadyAssignedError } from '../core/errors';
 import { CharacterV1NotFoundError } from '../../character-v1/core/errors';
-import { ReleaseV1NotFoundError } from '../../release-v1/core/errors';
+import { KeywordV1NotFoundError } from '../../release-v1/core/errors';
 
-interface CharacterReleaseUseCases {
-  assignRelease: AssignCharacterReleaseV1UseCase;
-  revokeRelease: RevokeCharacterReleaseV1UseCase;
-  listCharacterReleases: ListByCharacterCharacterReleaseV1UseCase;
+interface CharacterKeywordUseCases {
+  assignKeyword: AssignCharacterKeywordV1UseCase;
+  revokeKeyword: RevokeCharacterKeywordV1UseCase;
+  listCharacterKeywords: ListByCharacterCharacterKeywordV1UseCase;
 }
 
-export function registerCharacterReleaseV1Routes(app: Express, useCases: CharacterReleaseUseCases): void {
-  app.get('/characters/:characterId/releases', async (req, res, next) => {
+export function registerCharacterKeywordV1Routes(app: Express, useCases: CharacterKeywordUseCases): void {
+  app.get('/characters/:characterId/keywords', async (req, res, next) => {
     try {
-      res.json(await useCases.listCharacterReleases.execute({ character_id: req.params['characterId'] }));
+      res.json(await useCases.listCharacterKeywords.execute({ character_id: req.params['characterId'] }));
     } catch (err) {
       next(err);
     }
   });
 
-  app.post('/characters/:characterId/releases', async (req, res, next) => {
+  app.post('/characters/:characterId/keywords', async (req, res, next) => {
     try {
-      res.status(201).json(await useCases.assignRelease.execute({
+      res.status(201).json(await useCases.assignKeyword.execute({
         character_id: req.params['characterId'],
-        release_id: req.body.release_id,
+        keyword_id: req.body.keyword_id,
       }));
     } catch (err) {
       if (err instanceof CharacterV1NotFoundError) return next(createHttpError(404, err.message));
-      if (err instanceof ReleaseV1NotFoundError) return next(createHttpError(404, err.message));
-      if (err instanceof CharacterReleaseV1AlreadyAssignedError) return next(createHttpError(409, err.message));
+      if (err instanceof KeywordV1NotFoundError) return next(createHttpError(404, err.message));
+      if (err instanceof CharacterKeywordV1AlreadyAssignedError) return next(createHttpError(409, err.message));
       next(err);
     }
   });
 
   app.delete('/characters/:characterId/releases/:releaseAssignmentId', async (req, res, next) => {
     try {
-      await useCases.revokeRelease.execute({ id: req.params['releaseAssignmentId'] });
+      await useCases.revokeKeyword.execute({ id: req.params['releaseAssignmentId'] });
       res.status(204).send();
     } catch (err) {
-      if (err instanceof CharacterReleaseV1NotFoundError) return next(createHttpError(404, err.message));
+      if (err instanceof CharacterKeywordV1NotFoundError) return next(createHttpError(404, err.message));
       next(err);
     }
   });

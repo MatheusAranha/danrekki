@@ -1,18 +1,18 @@
 import { SchemaValidationError } from '../../../_shared/errors';
-import { ReleaseV1Entity } from './entity';
-import { releaseV1Factory } from './factory';
+import { KeywordV1Entity } from './entity';
+import { keywordV1Factory } from './factory';
 
-describe('ReleaseV1Entity', () => {
+describe('KeywordV1Entity', () => {
   describe('entity creation', () => {
-    it('should create a valid release entity', () => {
-      const dto = releaseV1Factory.generateOne();
-      const entity = new ReleaseV1Entity({ releaseInputData: dto });
+    it('should create a valid keyword entity', () => {
+      const dto = keywordV1Factory.generateOne();
+      const entity = new KeywordV1Entity({ keywordInputData: dto });
       expect(entity.validate().getDto()).toEqual(dto);
     });
 
     it('should return a deep copy from getDto', () => {
-      const dto = releaseV1Factory.generateOne();
-      const entity = new ReleaseV1Entity({ releaseInputData: dto }).validate();
+      const dto = keywordV1Factory.generateOne();
+      const entity = new KeywordV1Entity({ keywordInputData: dto }).validate();
       const result = entity.getDto();
       result.name = 'mutated';
       expect(entity.getDto().name).toBe(dto.name);
@@ -20,15 +20,15 @@ describe('ReleaseV1Entity', () => {
   });
 
   describe('validation rules', () => {
-    it('should reject a release with an empty name', () => {
-      const dto = releaseV1Factory.generateOne({ overrides: { name: '' } });
-      const entity = new ReleaseV1Entity({ releaseInputData: dto });
+    it('should reject a keyword with an empty name', () => {
+      const dto = keywordV1Factory.generateOne({ overrides: { name: '' } });
+      const entity = new KeywordV1Entity({ keywordInputData: dto });
       expect(() => entity.validate()).toThrow(SchemaValidationError);
     });
 
-    it('should accept a release with a valid name', () => {
-      const dto = releaseV1Factory.generateOne({ overrides: { name: 'Fire Release' } });
-      const entity = new ReleaseV1Entity({ releaseInputData: dto });
+    it('should accept a keyword with a valid name', () => {
+      const dto = keywordV1Factory.generateOne({ overrides: { name: 'Fire Release' } });
+      const entity = new KeywordV1Entity({ keywordInputData: dto });
       expect(() => entity.validate()).not.toThrow();
     });
   });
