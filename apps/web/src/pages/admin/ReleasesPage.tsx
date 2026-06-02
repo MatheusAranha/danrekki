@@ -18,18 +18,15 @@ function ReleaseForm({
   saving,
 }: {
   initial?: Release;
-  onSave: (name: string, date: string) => void;
+  onSave: (name: string) => void;
   onCancel: () => void;
   saving: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
-  const [date, setDate] = useState(
-    initial?.date ? initial.date.split('T')[0] : ''
-  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(name, date);
+    onSave(name);
   };
 
   return (
@@ -39,16 +36,7 @@ function ReleaseForm({
           className={inputClass}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Arc 1 Release"
-          required
-        />
-      </FormField>
-      <FormField label="Date" required>
-        <input
-          type="date"
-          className={inputClass}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
+          placeholder="Fire, Water, Thunder..."
           required
         />
       </FormField>
@@ -91,14 +79,14 @@ export function ReleasesPage() {
   const openEdit = (r: Release) => { setEditing(r); setModalOpen(true); };
   const closeModal = () => { setModalOpen(false); setEditing(null); };
 
-  const handleSave = async (name: string, date: string) => {
+  const handleSave = async (name: string) => {
     setSaving(true);
     try {
       if (editing) {
-        await releasesApi.update(editing._id, { name, date });
+        await releasesApi.update(editing._id, { name });
         show('Release updated');
       } else {
-        await releasesApi.create({ name, date });
+        await releasesApi.create({ name });
         show('Release created');
       }
       closeModal();
@@ -129,20 +117,13 @@ export function ReleasesPage() {
 
   const columns: Column<Release>[] = [
     { key: 'name', label: 'Name' },
-    {
-      key: 'date',
-      label: 'Date',
-      render: (r) => (
-        <span className="text-gray-400">{new Date(r.date).toLocaleDateString()}</span>
-      ),
-    },
   ];
 
   return (
     <div>
       <PageHeader
-        title="Releases"
-        description="Content release schedule."
+        title="Chakra Releases"
+        description="Elemental chakra releases (Fire, Water, Thunder, etc.)."
         action={{ label: '+ New Release', onClick: openCreate }}
       />
       <DataTable
