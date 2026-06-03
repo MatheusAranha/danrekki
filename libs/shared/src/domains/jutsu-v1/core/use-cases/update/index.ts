@@ -30,10 +30,14 @@ export class UpdateJutsuV1UseCase {
         ...(inputDto.name !== undefined && { name: inputDto.name }),
         ...(inputDto.jutsu_rank_id !== undefined && { jutsu_rank_id: inputDto.jutsu_rank_id }),
         ...(inputDto.keyword_ids !== undefined && { keyword_ids: inputDto.keyword_ids }),
+        ...(inputDto.elements !== undefined && { elements: inputDto.elements }),
+        ...(inputDto.casting_time !== undefined && { casting_time: inputDto.casting_time }),
+        ...(inputDto.range !== undefined && { range: inputDto.range }),
+        ...(inputDto.chakra_cost !== undefined && { chakra_cost: inputDto.chakra_cost }),
         ...(inputDto.components !== undefined && { components: inputDto.components }),
         ...(inputDto.duration !== undefined && { duration: inputDto.duration }),
         ...(inputDto.description !== undefined && { description: inputDto.description }),
-        ...(inputDto.elements !== undefined && { elements: inputDto.elements }),
+        ...(inputDto.at_higher_ranks !== undefined && { at_higher_ranks: inputDto.at_higher_ranks }),
         updated_at: new Date().toISOString(),
       });
       log.steps.push({ message: `Jutsu ${inputDto.id} updated.` });

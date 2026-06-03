@@ -5,9 +5,14 @@ export interface Jutsu {
   name: string;
   jutsu_rank_id: string;
   keyword_ids: string[];
+  elements: string[];
+  casting_time: string;
+  range: string;
+  chakra_cost: string;
   components: string;
   duration: string;
   description: string;
+  at_higher_ranks: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,9 +24,14 @@ export const jutsusApi = {
     name: string;
     jutsu_rank_id: string;
     keyword_ids: string[];
+    elements: string[];
+    casting_time: string;
+    range: string;
+    chakra_cost: string;
     components: string;
     duration: string;
     description: string;
+    at_higher_ranks: string | null;
   }) => apiClient.post<Jutsu>('/jutsus', body).then((r) => r.data),
   update: (
     id: string,
@@ -29,9 +39,14 @@ export const jutsusApi = {
       name: string;
       jutsu_rank_id: string;
       keyword_ids: string[];
+      elements: string[];
+      casting_time: string;
+      range: string;
+      chakra_cost: string;
       components: string;
       duration: string;
       description: string;
+      at_higher_ranks: string | null;
     }>
   ) => apiClient.patch<Jutsu>(`/jutsus/${id}`, body).then((r) => r.data),
   delete: (id: string) => apiClient.delete(`/jutsus/${id}`),

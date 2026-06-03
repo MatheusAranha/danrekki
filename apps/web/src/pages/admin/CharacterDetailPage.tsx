@@ -111,7 +111,7 @@ export function CharacterDetailPage() {
 
   const loadCharacterData = async (id: string) => {
     const [cr, cl, cs, p] = await Promise.all([
-      charactersApi.getReleases(id),
+      charactersApi.getKeywords(id),
       charactersApi.getLibraries(id),
       charactersApi.getSenseis(id),
       charactersApi.getLearningProgress(id),

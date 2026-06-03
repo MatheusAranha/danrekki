@@ -104,7 +104,7 @@ export const charactersApi = {
   assignKeyword: (id: string, body: { keyword_id: string }) =>
     apiClient.post(`/characters/${id}/keywords`, body).then((r) => r.data),
   revokeKeyword: (charId: string, keywordAssignId: string) =>
-    apiClient.delete(`/characters/${charId}/keywords/${releaseId}`),
+    apiClient.delete(`/characters/${charId}/keywords/${keywordAssignId}`),
 
   getLibraries: (id: string) =>
     apiClient

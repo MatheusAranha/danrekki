@@ -14,13 +14,20 @@ const inputClass =
   'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500';
 const textareaClass = `${inputClass} resize-y min-h-[80px]`;
 
+const ELEMENTS = ['katon', 'suiton', 'doton', 'futon', 'raiton'] as const;
+
 interface JutsuFormData {
   name: string;
   jutsu_rank_id: string;
   keyword_ids: string[];
+  elements: string[];
+  casting_time: string;
+  range: string;
+  chakra_cost: string;
   components: string;
   duration: string;
   description: string;
+  at_higher_ranks: string;
 }
 
 function JutsuForm({
@@ -42,12 +49,17 @@ function JutsuForm({
     name: initial?.name ?? '',
     jutsu_rank_id: initial?.jutsu_rank_id ?? '',
     keyword_ids: initial?.keyword_ids ?? [],
+    elements: initial?.elements ?? [],
+    casting_time: initial?.casting_time ?? '',
+    range: initial?.range ?? '',
+    chakra_cost: initial?.chakra_cost ?? '',
     components: initial?.components ?? '',
     duration: initial?.duration ?? '',
     description: initial?.description ?? '',
+    at_higher_ranks: initial?.at_higher_ranks ?? '',
   });
 
-  const set = (field: keyof Omit<JutsuFormData, 'keyword_ids'>) => (
+  const set = (field: keyof Omit<JutsuFormData, 'keyword_ids' | 'elements'>) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -57,6 +69,15 @@ function JutsuForm({
       keyword_ids: f.keyword_ids.includes(id)
         ? f.keyword_ids.filter((k) => k !== id)
         : [...f.keyword_ids, id],
+    }));
+  };
+
+  const toggleElement = (el: string) => {
+    setForm((f) => ({
+      ...f,
+      elements: f.elements.includes(el)
+        ? f.elements.filter((e) => e !== el)
+        : [...f.elements, el],
     }));
   };
 
@@ -75,6 +96,35 @@ function JutsuForm({
           <option value="" disabled>Select rank...</option>
           {jutsuRanks.map((r) => <option key={r._id} value={r._id}>{r.name}</option>)}
         </select>
+      </FormField>
+      <div className="grid grid-cols-3 gap-3">
+        <FormField label="Casting Time" required>
+          <input className={inputClass} value={form.casting_time} onChange={set('casting_time')} placeholder="1 Action" required />
+        </FormField>
+        <FormField label="Range" required>
+          <input className={inputClass} value={form.range} onChange={set('range')} placeholder="60 feet" required />
+        </FormField>
+        <FormField label="Chakra Cost" required>
+          <input className={inputClass} value={form.chakra_cost} onChange={set('chakra_cost')} placeholder="3 Chakra" required />
+        </FormField>
+      </div>
+      <FormField label="Elements">
+        <div className="flex flex-wrap gap-2 pt-1">
+          {ELEMENTS.map((el) => (
+            <button
+              key={el}
+              type="button"
+              onClick={() => toggleElement(el)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                form.elements.includes(el)
+                  ? 'bg-blue-500 border-blue-500 text-white'
+                  : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-blue-500'
+              }`}
+            >
+              {el}
+            </button>
+          ))}
+        </div>
       </FormField>
       <FormField label="Keywords">
         <div className="flex flex-wrap gap-2 pt-1">
@@ -95,14 +145,19 @@ function JutsuForm({
           {keywords.length === 0 && <span className="text-gray-500 text-sm">No keywords yet.</span>}
         </div>
       </FormField>
-      <FormField label="Components" required>
-        <input className={inputClass} value={form.components} onChange={set('components')} placeholder="Hand seals, chakra" required />
-      </FormField>
-      <FormField label="Duration" required>
-        <input className={inputClass} value={form.duration} onChange={set('duration')} placeholder="Instantaneous" required />
-      </FormField>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Components" required>
+          <input className={inputClass} value={form.components} onChange={set('components')} placeholder="HS, CM" required />
+        </FormField>
+        <FormField label="Duration" required>
+          <input className={inputClass} value={form.duration} onChange={set('duration')} placeholder="Instantaneous" required />
+        </FormField>
+      </div>
       <FormField label="Description" required>
         <textarea className={textareaClass} value={form.description} onChange={set('description')} placeholder="Describe this jutsu..." required />
+      </FormField>
+      <FormField label="At Higher Ranks">
+        <textarea className={textareaClass} value={form.at_higher_ranks} onChange={set('at_higher_ranks')} placeholder="For each rank above D-Rank, increase cost by 3..." />
       </FormField>
       <div className="flex justify-end gap-3 pt-2">
         <Button variant="secondary" type="button" onClick={onCancel}>Cancel</Button>
@@ -151,11 +206,15 @@ export function JutsusPage() {
   const handleSave = async (data: JutsuFormData) => {
     setSaving(true);
     try {
+      const payload = {
+        ...data,
+        at_higher_ranks: data.at_higher_ranks.trim() || null,
+      };
       if (editing) {
-        await jutsusApi.update(editing._id, data);
+        await jutsusApi.update(editing._id, payload);
         show('Jutsu updated');
       } else {
-        await jutsusApi.create(data);
+        await jutsusApi.create(payload);
         show('Jutsu created');
       }
       closeModal();
@@ -191,9 +250,12 @@ export function JutsusPage() {
     { key: 'name', label: 'Name' },
     {
       key: 'jutsu_rank_id',
-      label: 'Jutsu Rank',
+      label: 'Rank',
       render: (j) => <span className="text-gray-300">{rankMap[j.jutsu_rank_id] ?? j.jutsu_rank_id}</span>,
     },
+    { key: 'casting_time', label: 'Casting Time' },
+    { key: 'range', label: 'Range' },
+    { key: 'chakra_cost', label: 'Chakra Cost' },
     {
       key: 'keyword_ids',
       label: 'Keywords',
@@ -209,7 +271,6 @@ export function JutsusPage() {
         </div>
       ),
     },
-    { key: 'duration', label: 'Duration' },
   ];
 
   return (
