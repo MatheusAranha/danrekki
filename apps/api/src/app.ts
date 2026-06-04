@@ -147,6 +147,7 @@ export function createApp(db: Db) {
 
   app.use(cors({ origin: frontendUrl, credentials: true }));
   app.use(express.json());
+  app.use((_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
