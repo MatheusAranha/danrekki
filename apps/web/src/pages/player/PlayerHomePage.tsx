@@ -53,9 +53,9 @@ export function PlayerHomePage() {
   if (!character) {
     return (
       <div className="text-center py-20 text-gray-400">
-        <p className="text-lg">No character assigned to your account.</p>
+        <p className="text-lg">Your character hasn't been created yet.</p>
         <p className="text-sm mt-2">
-          Contact an administrator to have a character linked to you.
+          Your Dungeon Master will create your character. Check back after your first session.
         </p>
       </div>
     );

@@ -96,6 +96,8 @@ export const charactersApi = {
   list: () => apiClient.get<Character[]>('/characters').then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Character>(`/characters/${id}`).then((r) => r.data),
+  create: (body: { name: string; user_id: string; clan_id: string }) =>
+    apiClient.post<Character>('/characters', body).then((r) => r.data),
 
   getKeywords: (id: string) =>
     apiClient
