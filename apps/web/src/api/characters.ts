@@ -178,4 +178,9 @@ export const charactersApi = {
     apiClient
       .get<DtTransaction[]>(`/characters/${id}/dt-transactions`)
       .then((r) => r.data),
+
+  adminGrant: (id: string, body: { trainable_content_id: string }) =>
+    apiClient
+      .post<LearningProgress>(`/characters/${id}/learning-progress/admin-grant`, body)
+      .then((r) => r.data),
 };

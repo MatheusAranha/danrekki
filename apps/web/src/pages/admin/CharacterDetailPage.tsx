@@ -75,6 +75,11 @@ export function CharacterDetailPage() {
   const [senseiModalOpen, setSenseiModalOpen] = useState(false);
   const [addingSaving, setAddingSaving] = useState(false);
 
+  // Admin grant
+  const [grantModalOpen, setGrantModalOpen] = useState(false);
+  const [grantContentId, setGrantContentId] = useState('');
+  const [grantSaving, setGrantSaving] = useState(false);
+
   // Delete confirm
   const [deleteKeywordTarget, setDeleteKeywordTarget] = useState<CharacterKeyword | null>(null);
   const [deleteLibraryTarget, setDeleteLibraryTarget] = useState<CharacterLibrary | null>(null);
@@ -263,6 +268,24 @@ export function CharacterDetailPage() {
       show(ex.response?.data?.error || ex.message || 'Failed', 'error');
     } finally {
       setAddingSaving(false);
+    }
+  };
+
+  const handleAdminGrant = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!characterId) return;
+    setGrantSaving(true);
+    try {
+      await charactersApi.adminGrant(characterId, { trainable_content_id: grantContentId });
+      show('Content granted');
+      setGrantModalOpen(false);
+      setGrantContentId('');
+      await refreshCharacter();
+    } catch (err: unknown) {
+      const ex = err as { response?: { data?: { error?: string } }; message?: string };
+      show(ex.response?.data?.error || ex.message || 'Failed', 'error');
+    } finally {
+      setGrantSaving(false);
     }
   };
 
@@ -519,7 +542,10 @@ export function CharacterDetailPage() {
       {/* Learning Progress tab */}
       {activeTab === 'progress' && (
         <div>
-          <h2 className="text-base font-semibold text-gray-200 mb-4">Learning Progress</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-base font-semibold text-gray-200">Learning Progress</h2>
+            <Button size="sm" onClick={() => { setGrantContentId(''); setGrantModalOpen(true); }}>+ Grant Content</Button>
+          </div>
           <div className="overflow-x-auto rounded-xl border border-gray-800">
             <table className="w-full text-sm">
               <thead>
@@ -557,6 +583,32 @@ export function CharacterDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Admin grant modal */}
+      <Modal isOpen={grantModalOpen} title="Grant Content" onClose={() => setGrantModalOpen(false)} size="sm">
+        <form onSubmit={handleAdminGrant} className="flex flex-col gap-4">
+          <FormField label="Trainable Content" required>
+            <select
+              className={inputClass}
+              value={grantContentId}
+              onChange={(e) => setGrantContentId(e.target.value)}
+              required
+            >
+              <option value="" disabled>Select content...</option>
+              {allContents
+                .filter((c) => !progress.some((p) => p.trainable_content_id === c._id && p.status === 'completed'))
+                .map((c) => (
+                  <option key={c._id} value={c._id}>{c.name} ({c.type})</option>
+                ))}
+            </select>
+          </FormField>
+          <p className="text-xs text-gray-500">The content will be immediately marked as completed, bypassing the DT system.</p>
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" type="button" onClick={() => setGrantModalOpen(false)}>Cancel</Button>
+            <Button type="submit" loading={grantSaving}>Grant</Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Keyword modal */}
       <Modal isOpen={keywordModalOpen} title="Assign Keyword" onClose={() => setKeywordModalOpen(false)} size="sm">
