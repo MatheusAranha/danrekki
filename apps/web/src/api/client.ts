@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
-export const apiClient = axios.create({ baseURL: '/api' });
+// In production VITE_API_URL is the Render backend URL; in dev the vite proxy handles /api
+export const apiClient = axios.create({ baseURL: import.meta.env['VITE_API_URL'] ?? '/api' });
 
 apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
