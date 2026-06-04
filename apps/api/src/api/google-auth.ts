@@ -14,6 +14,15 @@ interface GoogleUserDoc {
   createdAt: Date;
 }
 
+interface UserDoc {
+  _id: string;
+  email: string;
+  password_hash: string;
+  role: 'admin' | 'player';
+  created_at: string;
+  updated_at: string;
+}
+
 export interface GoogleUserPublic {
   id: string;
   email: string;
@@ -34,13 +43,14 @@ export async function handleGoogleAuth(
   if (!payload?.sub) throw new Error('Invalid Google token payload');
 
   const { sub: googleId, email, name, picture } = payload;
-  const collection = db.collection<GoogleUserDoc>('google_users');
+  const googleCol = db.collection<GoogleUserDoc>('google_users');
+  const usersCol = db.collection<UserDoc>('users');
 
-  const existing = await collection.findOne({ googleId } as never);
+  const existing = await googleCol.findOne({ googleId } as never);
   let doc: GoogleUserDoc;
 
   if (existing) {
-    await collection.updateOne(
+    await googleCol.updateOne(
       { googleId } as never,
       { $set: { email: email ?? existing.email, name: name ?? existing.name, picture: picture ?? existing.picture } },
     );
@@ -55,7 +65,22 @@ export async function handleGoogleAuth(
       role: 'player',
       createdAt: new Date(),
     };
-    await collection.insertOne(doc as never);
+    await googleCol.insertOne(doc as never);
+  }
+
+  // Ensure the user exists in the main `users` collection so admins can see them.
+  // Uses the same _id as the google_users record for consistency.
+  const existingUser = await usersCol.findOne({ _id: doc._id } as never);
+  if (!existingUser) {
+    const now = new Date().toISOString();
+    await usersCol.insertOne({
+      _id: doc._id,
+      email: doc.email,
+      password_hash: '__google__', // sentinel — prevents password-based login
+      role: doc.role,
+      created_at: now,
+      updated_at: now,
+    } as never);
   }
 
   const tokenService = new JwtTokenService(jwtSecret, jwtExpiresIn);
