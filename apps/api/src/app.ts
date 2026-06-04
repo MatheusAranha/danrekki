@@ -8,6 +8,7 @@ import { authenticate, requireAdmin } from './middleware/auth.middleware';
 import { JwtTokenService } from './infrastructure/jwt-token-service';
 import { getMongoClient } from './database/mongodb';
 import { config } from './config';
+import { handleGoogleAuth, getGoogleUser } from './api/google-auth';
 
 import { MongoClanV1DatabaseRepository } from '@danrekki/shared/domains/clan-v1/adapters/mongo-clan-v1-database-repository';
 import { registerClanV1Routes } from '@danrekki/shared/domains/clan-v1/adapters/express-clan-v1.controller';
@@ -141,13 +142,37 @@ import { GetTrainingCatalogV1UseCase } from '@danrekki/shared/domains/character-
 
 export function createApp(db: Db) {
   const app = express();
-  const { jwtSecret, jwtExpiresIn } = config();
+  const { jwtSecret, jwtExpiresIn, frontendUrl } = config();
   const tokenService = new JwtTokenService(jwtSecret, jwtExpiresIn);
 
-  app.use(cors());
+  app.use(cors({ origin: frontendUrl, credentials: true }));
   app.use(express.json());
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+  app.post('/auth/google', async (req, res, next) => {
+    try {
+      const { credential } = req.body as { credential?: string };
+      if (!credential) return next(createHttpError(400, 'credential is required'));
+      const result = await handleGoogleAuth(db, credential);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  app.get('/me', authenticate, async (req, res, next) => {
+    try {
+      const googleUser = await getGoogleUser(db, req.user!.user_id);
+      if (googleUser) {
+        res.json(googleUser);
+        return;
+      }
+      res.json({ id: req.user!.user_id, email: req.user!.email, role: req.user!.role });
+    } catch (err) {
+      next(err);
+    }
+  });
 
   // — Users: /auth/* is public, /users/* requires admin —
   app.use('/users', authenticate, requireAdmin);
