@@ -139,6 +139,10 @@ import { InvestDtV1UseCase } from '@danrekki/shared/domains/character-learning-p
 import { GetCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/get';
 import { ListByCharacterLearningProgressV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/list-by-character';
 import { GetTrainingCatalogV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/get-catalog';
+import { AdminGrantJutsuV1UseCase } from '@danrekki/shared/domains/character-learning-progress-v1/core/use-cases/admin-grant-jutsu';
+import { LearningProgressV1AlreadyCompletedError } from '@danrekki/shared/domains/character-learning-progress-v1/core/errors';
+import { CharacterV1NotFoundError } from '@danrekki/shared/domains/character-v1/core/errors';
+import { TrainableContentV1NotFoundError } from '@danrekki/shared/domains/trainable-content-v1/core/errors';
 
 export function createApp(db: Db) {
   const app = express();
@@ -353,6 +357,21 @@ export function createApp(db: Db) {
       clanRepo,
       characterKeywordRepo,
     ),
+  });
+
+  const adminGrantJutsu = new AdminGrantJutsuV1UseCase(learningProgressRepo, characterRepo, trainableContentRepo);
+  app.post('/characters/:characterId/learning-progress/admin-grant', authenticate, requireAdmin, async (req, res, next) => {
+    try {
+      res.status(201).json(await adminGrantJutsu.execute({
+        character_id: req.params['characterId'],
+        trainable_content_id: req.body.trainable_content_id,
+      }));
+    } catch (err) {
+      if (err instanceof CharacterV1NotFoundError) return next(createHttpError(404, err.message));
+      if (err instanceof TrainableContentV1NotFoundError) return next(createHttpError(404, err.message));
+      if (err instanceof LearningProgressV1AlreadyCompletedError) return next(createHttpError(409, err.message));
+      next(err);
+    }
   });
 
   // — Global error handler —
