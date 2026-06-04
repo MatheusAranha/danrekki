@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npx nx build web",
-  "outputDirectory": "dist/apps/web",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "installCommand": "npm install --include=dev",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
