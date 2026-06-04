@@ -2,6 +2,7 @@
   "name": "danrekki",
   "version": "0.0.0",
   "private": true,
+  "workspaces": ["apps/*", "libs/*"],
   "scripts": {
     "setup": "bash scripts/setup.sh",
     "seed:admin": "tsx --tsconfig apps/api/tsconfig.json scripts/seed-admin.ts",
