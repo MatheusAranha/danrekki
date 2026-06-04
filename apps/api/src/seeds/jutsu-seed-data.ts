@@ -6,12 +6,12 @@ import { IKeywordV1Dto } from '@danrekki/shared/domains/release-v1/core/types';
 const NOW = '1970-01-01T00:00:00.000Z';
 
 export const SEED_JUTSU_RANKS: IJutsuRankV1Dto[] = [
-  { name: "E-Rank", order: 1, dt_cost: 10, _id: "dc532b2f11a7307a387d188c", created_at: NOW, updated_at: NOW },
-  { name: "D-Rank", order: 2, dt_cost: 25, _id: "b7c4bb8d8a7ea05b5574913a", created_at: NOW, updated_at: NOW },
-  { name: "C-Rank", order: 3, dt_cost: 50, _id: "e8cb106a7c700a15e96dde71", created_at: NOW, updated_at: NOW },
-  { name: "B-Rank", order: 4, dt_cost: 100, _id: "5b66927a43f65331bc68018d", created_at: NOW, updated_at: NOW },
-  { name: "A-Rank", order: 5, dt_cost: 200, _id: "ddb90764cacd7cc1ef326463", created_at: NOW, updated_at: NOW },
-  { name: "S-Rank", order: 6, dt_cost: 500, _id: "5f339e6048462aafae180c0d", created_at: NOW, updated_at: NOW },
+  { name: "E-Rank", order: 1, dt_cost: 4, _id: "dc532b2f11a7307a387d188c", created_at: NOW, updated_at: NOW },
+  { name: "D-Rank", order: 2, dt_cost: 8, _id: "b7c4bb8d8a7ea05b5574913a", created_at: NOW, updated_at: NOW },
+  { name: "C-Rank", order: 3, dt_cost: 16, _id: "e8cb106a7c700a15e96dde71", created_at: NOW, updated_at: NOW },
+  { name: "B-Rank", order: 4, dt_cost: 32, _id: "5b66927a43f65331bc68018d", created_at: NOW, updated_at: NOW },
+  { name: "A-Rank", order: 5, dt_cost: 64, _id: "ddb90764cacd7cc1ef326463", created_at: NOW, updated_at: NOW },
+  { name: "S-Rank", order: 6, dt_cost: 128, _id: "5f339e6048462aafae180c0d", created_at: NOW, updated_at: NOW },
 ];
 
 export const SEED_KEYWORDS: IKeywordV1Dto[] = [
