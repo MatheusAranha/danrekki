@@ -78,7 +78,7 @@ importers:
   apps/api:
     dependencies:
       '@danrekki/shared':
-        specifier: workspace:*
+        specifier: file:../../libs/shared
         version: link:../../libs/shared
       bcryptjs:
         specifier: ^2.4.3
@@ -130,7 +130,7 @@ importers:
   apps/web:
     dependencies:
       '@danrekki/shared':
-        specifier: workspace:*
+        specifier: file:../../libs/shared
         version: link:../../libs/shared
       '@react-oauth/google':
         specifier: ^0.13.5
