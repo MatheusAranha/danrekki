@@ -26,10 +26,9 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 const inputClass =
   'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500';
 
-type Tab = 'releases' | 'libraries' | 'senseis' | 'progress';
+type Tab = 'libraries' | 'senseis' | 'progress';
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'releases', label: 'Releases' },
   { key: 'libraries', label: 'Library Access' },
   { key: 'senseis', label: 'Sensei Access' },
   { key: 'progress', label: 'Learning Progress' },
@@ -42,7 +41,7 @@ export function CharacterDetailPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [clan, setClan] = useState<Clan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('releases');
+  const [activeTab, setActiveTab] = useState<Tab>('libraries');
 
   // Reference data
   const [releases, setReleases] = useState<Release[]>([]);
@@ -62,7 +61,7 @@ export function CharacterDetailPage() {
   const [dtReason, setDtReason] = useState('');
   const [dtLoading, setDtLoading] = useState(false);
 
-  // Elemental affinities
+  // Elemental releases
   const [affinitiesSaving, setAffinitiesSaving] = useState(false);
 
   // Add modals
@@ -138,11 +137,11 @@ export function CharacterDetailPage() {
     if (!characterId || !character || affinitiesSaving) return;
     setAffinitiesSaving(true);
     try {
-      const current = character.elemental_affinities ?? [];
+      const current = character.elemental_releases ?? [];
       const next = current.includes(element)
         ? current.filter((e) => e !== element)
         : [...current, element];
-      const updated = await charactersApi.update(characterId, { elemental_affinities: next });
+      const updated = await charactersApi.update(characterId, { elemental_releases: next });
       setCharacter(updated);
     } catch (err: unknown) {
       const ex = err as { response?: { data?: { error?: string } }; message?: string };
@@ -328,12 +327,12 @@ export function CharacterDetailPage() {
         </div>
       </div>
 
-      {/* Elemental Affinities */}
+      {/* Elemental Releases */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
-        <h2 className="text-sm font-semibold text-gray-300 mb-3">Elemental Affinities</h2>
+        <h2 className="text-sm font-semibold text-gray-300 mb-3">Elemental Releases</h2>
         <div className="flex flex-wrap gap-2">
           {(['katon', 'suiton', 'doton', 'futon', 'raiton'] as const).map((el) => {
-            const active = (character.elemental_affinities ?? []).includes(el);
+            const active = (character.elemental_releases ?? []).includes(el);
             return (
               <button
                 key={el}
@@ -400,47 +399,6 @@ export function CharacterDetailPage() {
           </button>
         ))}
       </div>
-
-      {/* Releases tab */}
-      {activeTab === 'releases' && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-base font-semibold text-gray-200">Assigned Releases</h2>
-            <Button size="sm" onClick={() => setKeywordModalOpen(true)}>+ Assign Keyword</Button>
-          </div>
-          <div className="overflow-x-auto rounded-xl border border-gray-800">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-900 border-b border-gray-800">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Keyword</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Assigned At</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {charKeywords.length === 0 ? (
-                  <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No releases assigned.</td></tr>
-                ) : charKeywords.map((cr) => (
-                  <tr key={cr._id} className="border-b border-gray-800/50 hover:bg-gray-800/50">
-                    <td className="px-4 py-3 text-gray-200">{keywordMap[cr.keyword_id] ?? cr.keyword_id}</td>
-                    <td className="px-4 py-3 text-gray-400">{new Date(cr.created_at).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setDeleteKeywordTarget(cr)}
-                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-lg transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* Libraries tab */}
       {activeTab === 'libraries' && (

@@ -108,13 +108,13 @@ export function PlayerHomePage() {
         </div>
       </div>
 
-      {character.elemental_affinities && character.elemental_affinities.length > 0 && (
+      {character.elemental_releases && character.elemental_releases.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">
-            Elemental Affinities
+            Elemental Releases
           </p>
           <div className="flex flex-wrap gap-2">
-            {character.elemental_affinities.map((el) => (
+            {character.elemental_releases.map((el) => (
               <Badge key={el} variant={elementColors[el.toLowerCase()] ?? 'gray'}>
                 {el}
               </Badge>

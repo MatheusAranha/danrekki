@@ -70,7 +70,7 @@ export class GetTrainingCatalogV1UseCase {
       );
       log.steps.push({ message: `Retrieved ${allProgress.length} existing learning progress record(s).` });
 
-      const affinities = new Set<JutsuElement>(character.elemental_affinities);
+      const affinities = new Set<JutsuElement>(character.elemental_releases);
 
       // ── Library entries ─────────────────────────────────────────────────────
       const libraryEntries: ICatalogEntryV1Dto[] = [];

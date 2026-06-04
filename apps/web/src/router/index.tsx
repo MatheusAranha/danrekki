@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { ClansPage } from '../pages/admin/ClansPage';
-import { ReleasesPage } from '../pages/admin/ReleasesPage';
+import { KeywordsPage } from '../pages/admin/KeywordsPage';
 import { JutsuRanksPage } from '../pages/admin/JutsuRanksPage';
 import { NinjaRanksPage } from '../pages/admin/NinjaRanksPage';
 import { JutsusPage } from '../pages/admin/JutsusPage';
@@ -66,7 +66,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'clans', element: <ClansPage /> },
-      { path: 'releases', element: <ReleasesPage /> },
+      { path: 'keywords', element: <KeywordsPage /> },
       { path: 'jutsu-ranks', element: <JutsuRanksPage /> },
       { path: 'ninja-ranks', element: <NinjaRanksPage /> },
       { path: 'jutsus', element: <JutsusPage /> },

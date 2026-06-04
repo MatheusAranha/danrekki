@@ -23,7 +23,7 @@ export class UpdateCharacterV1UseCase {
       const updated = await this.characterRepository.update(inputDto.id, {
         ...(inputDto.name !== undefined && { name: inputDto.name }),
         ...(inputDto.clan_id !== undefined && { clan_id: inputDto.clan_id }),
-        ...(inputDto.elemental_affinities !== undefined && { elemental_affinities: inputDto.elemental_affinities }),
+        ...(inputDto.elemental_releases !== undefined && { elemental_releases: inputDto.elemental_releases }),
         updated_at: new Date().toISOString(),
       });
       log.steps.push({ message: `Character ${inputDto.id} updated.` });

@@ -6,7 +6,7 @@ export interface IUpdateCharacterV1UseCaseInputDto {
   id: string;
   name?: string;
   clan_id?: string;
-  elemental_affinities?: JutsuElement[];
+  elemental_releases?: JutsuElement[];
 }
 
 export type IUpdateCharacterV1UseCaseOutputDto = ICharacterV1Dto;

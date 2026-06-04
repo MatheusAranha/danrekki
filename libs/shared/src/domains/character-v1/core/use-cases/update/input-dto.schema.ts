@@ -6,6 +6,6 @@ export const updateCharacterV1InputDtoJsonSchema = {
     id: { type: 'string', minLength: 1 },
     name: { type: 'string', minLength: 1 },
     clan_id: { type: 'string', minLength: 1 },
-    elemental_affinities: { type: 'array', items: { type: 'string', enum: ['katon', 'suiton', 'doton', 'futon', 'raiton', 'iryo'] } },
+    elemental_releases: { type: 'array', items: { type: 'string', enum: ['katon', 'suiton', 'doton', 'futon', 'raiton', 'iryo'] } },
   },
 };

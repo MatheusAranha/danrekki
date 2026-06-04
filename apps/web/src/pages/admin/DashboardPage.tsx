@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/auth';
 
 const sections = [
   { label: 'Clans', to: '/admin/clans', description: 'Manage ninja clans and DT modifiers' },
-  { label: 'Releases', to: '/admin/releases', description: 'Content release schedule' },
+  { label: 'Keywords', to: '/admin/keywords', description: 'Jutsu classification tags' },
   { label: 'Jutsu Ranks', to: '/admin/jutsu-ranks', description: 'Rank tiers for jutsu learning' },
   { label: 'Ninja Ranks', to: '/admin/ninja-ranks', description: 'Shinobi rank progression' },
   { label: 'Jutsus', to: '/admin/jutsus', description: 'All learnable jutsu' },

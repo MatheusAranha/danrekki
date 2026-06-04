@@ -35,7 +35,7 @@ export class MongoCharacterV1DatabaseRepository extends CharacterV1DatabaseRepos
 
   async update(
     id: string,
-    updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'elemental_affinities' | 'updated_at'>>,
+    updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'elemental_releases' | 'updated_at'>>,
     session?: RepositorySession,
   ): Promise<ICharacterV1Dto | null> {
     const result = await this.collection.findOneAndUpdate(
