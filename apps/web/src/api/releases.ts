@@ -8,11 +8,11 @@ export interface Release {
 }
 
 export const releasesApi = {
-  list: () => apiClient.get<Release[]>('/releases').then((r) => r.data),
-  get: (id: string) => apiClient.get<Release>(`/releases/${id}`).then((r) => r.data),
+  list: () => apiClient.get<Release[]>('/keywords').then((r) => r.data),
+  get: (id: string) => apiClient.get<Release>(`/keywords/${id}`).then((r) => r.data),
   create: (body: { name: string }) =>
-    apiClient.post<Release>('/releases', body).then((r) => r.data),
+    apiClient.post<Release>('/keywords', body).then((r) => r.data),
   update: (id: string, body: Partial<{ name: string }>) =>
-    apiClient.patch<Release>(`/releases/${id}`, body).then((r) => r.data),
-  delete: (id: string) => apiClient.delete(`/releases/${id}`),
+    apiClient.patch<Release>(`/keywords/${id}`, body).then((r) => r.data),
+  delete: (id: string) => apiClient.delete(`/keywords/${id}`),
 };

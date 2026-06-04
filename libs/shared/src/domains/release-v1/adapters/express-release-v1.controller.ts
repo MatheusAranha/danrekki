@@ -33,7 +33,7 @@ export function registerKeywordV1Routes(app: Express, useCases: KeywordUseCases)
     }
   });
 
-  app.get('/releases/:id', async (req, res, next) => {
+  app.get('/keywords/:id', async (req, res, next) => {
     try {
       res.json(await useCases.getKeyword.execute({ id: req.params['id'] }));
     } catch (err) {
@@ -42,7 +42,7 @@ export function registerKeywordV1Routes(app: Express, useCases: KeywordUseCases)
     }
   });
 
-  app.patch('/releases/:id', async (req, res, next) => {
+  app.patch('/keywords/:id', async (req, res, next) => {
     try {
       res.json(await useCases.updateKeyword.execute({ id: req.params['id'], ...req.body }));
     } catch (err) {
@@ -52,7 +52,7 @@ export function registerKeywordV1Routes(app: Express, useCases: KeywordUseCases)
     }
   });
 
-  app.delete('/releases/:id', async (req, res, next) => {
+  app.delete('/keywords/:id', async (req, res, next) => {
     try {
       await useCases.deleteKeyword.execute({ id: req.params['id'] });
       res.status(204).send();

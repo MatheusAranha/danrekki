@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@danrekki/shared": "file:../../libs/shared",
+    "@danrekki/shared": "workspace:*",
     "@react-oauth/google": "^0.13.5",
     "axios": "^1.6.5",
     "react": "^18.2.0",
