@@ -1,9 +1,11 @@
 import { connectToDatabase } from './database/mongodb';
 import { createApp } from './app';
 import { config } from './config';
+import { seedJutsus } from './seeds/jutsu-seeder';
 
 async function bootstrap() {
   const db = await connectToDatabase();
+  await seedJutsus(db);
   const app = createApp(db);
   const { port } = config();
   app.listen(port, () => {
