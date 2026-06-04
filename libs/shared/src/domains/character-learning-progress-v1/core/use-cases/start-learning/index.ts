@@ -20,11 +20,6 @@ import { SenseiContentV1DatabaseRepository } from '../../../../sensei-content-v1
 import { calculateDtCost } from '../../services/calculate-dt-cost';
 import { IStartLearningV1UseCaseInputDto, IStartLearningV1UseCaseOutputDto } from './types';
 
-// DT multipliers: each DT you invest "counts for" more progress when learning with a better source.
-const SOURCE_DT_DIVISOR: Record<'sensei' | 'library', number> = {
-  sensei: 2,    // learn twice as fast with a sensei
-  library: 1.5, // learn 1.5× faster via scroll vs. raw
-};
 
 const inputSchema = {
   type: 'object',
@@ -88,7 +83,7 @@ export class StartLearningV1UseCase {
         }
       }
 
-      const source = await this.checkAccess(inputDto.character_id, content._id, content.jutsu_id, log);
+      await this.checkAccess(inputDto.character_id, content._id, content.jutsu_id, log);
 
       const clan = character.clan_id ? await this.clanRepo.findById(character.clan_id) : null;
       log.steps.push({ message: clan ? `Clan ${character.clan_id} found.` : 'No clan found, using empty modifiers.' });
@@ -97,9 +92,8 @@ export class StartLearningV1UseCase {
       const keywordIds = characterKeywords.map((r) => r.keyword_id);
       log.steps.push({ message: `Retrieved ${keywordIds.length} keyword(s) for character ${inputDto.character_id}.` });
 
-      const baseCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
-      const dtRequired = Math.ceil(baseCost / SOURCE_DT_DIVISOR[source]);
-      log.steps.push({ message: `Calculated dt_required: ${dtRequired} (source: ${source}, divisor: ${SOURCE_DT_DIVISOR[source]}).` });
+      const dtRequired = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
+      log.steps.push({ message: `Calculated dt_required: ${dtRequired}.` });
 
       const now = new Date().toISOString();
       const progressDto = new CharacterLearningProgressV1Entity({
@@ -137,13 +131,13 @@ export class StartLearningV1UseCase {
     contentId: string,
     jutsuId: string | null,
     log: ILog,
-  ): Promise<'sensei' | 'library'> {
+  ): Promise<void> {
     const charSenseis = await this.characterSenseiRepo.findByCharacterId(characterId);
     for (const charSensei of charSenseis) {
       const sc = await this.senseiContentRepo.findBySenseiAndContent(charSensei.sensei_id, contentId);
       if (sc && charSensei.proximity >= sc.required_proximity) {
         log.steps.push({ message: 'Access granted via sensei.' });
-        return 'sensei';
+        return;
       }
     }
 
@@ -153,7 +147,7 @@ export class StartLearningV1UseCase {
         const scrolls = await this.libraryScrollRepo.findByLibraryId(charLib.library_id);
         if (scrolls.some((s) => s.jutsu_id === jutsuId)) {
           log.steps.push({ message: 'Access granted via library scroll.' });
-          return 'library';
+          return;
         }
       }
     }

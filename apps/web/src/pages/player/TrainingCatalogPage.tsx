@@ -113,10 +113,15 @@ function JutsuDetailModal({
   );
 }
 
+type DtSource = 'solo' | 'library' | 'sensei';
+const SOURCE_MULTIPLIER: Record<DtSource, number> = { solo: 1, library: 1.5, sensei: 2 };
+const SOURCE_LABELS: Record<DtSource, string> = { solo: 'Solo (×1)', library: 'Library Scroll (×1.5)', sensei: 'With Sensei (×2)' };
+
 interface InvestModalState {
   open: boolean;
   entry: CatalogEntry | null;
   amount: string;
+  source: DtSource;
   loading: boolean;
 }
 
@@ -221,7 +226,7 @@ export function TrainingCatalogPage() {
   const [startingId, setStartingId] = useState<string | null>(null);
   const [detailEntry, setDetailEntry] = useState<CatalogEntry | null>(null);
   const [investModal, setInvestModal] = useState<InvestModalState>({
-    open: false, entry: null, amount: '', loading: false,
+    open: false, entry: null, amount: '', source: 'solo', loading: false,
   });
 
   const loadCatalog = useCallback(async (charId: string, ineligible: boolean) => {
@@ -274,12 +279,12 @@ export function TrainingCatalogPage() {
   };
 
   const handleOpenInvestModal = (entry: CatalogEntry) => {
-    setInvestModal({ open: true, entry, amount: '', loading: false });
+    setInvestModal({ open: true, entry, amount: '', source: 'solo', loading: false });
   };
 
   const handleCloseInvestModal = () => {
     if (investModal.loading) return;
-    setInvestModal({ open: false, entry: null, amount: '', loading: false });
+    setInvestModal({ open: false, entry: null, amount: '', source: 'solo', loading: false });
   };
 
   const handleInvestDt = async () => {
@@ -287,15 +292,14 @@ export function TrainingCatalogPage() {
     const amount = parseInt(investModal.amount, 10);
     if (!amount || amount <= 0) { showToast('Enter a valid amount.', 'error'); return; }
 
-    const progress = investModal.entry.learning_progress;
-    const remaining = progress.dt_required - progress.dt_invested;
-    const capped = Math.min(amount, remaining);
-
     setInvestModal((prev) => ({ ...prev, loading: true }));
     try {
-      await charactersApi.investDt(character._id, progress._id, { amount: capped });
+      await charactersApi.investDt(character._id, investModal.entry.learning_progress._id, {
+        amount,
+        source: investModal.source,
+      });
       showToast('DT invested!', 'success');
-      setInvestModal({ open: false, entry: null, amount: '', loading: false });
+      setInvestModal({ open: false, entry: null, amount: '', source: 'solo', loading: false });
       await loadCatalog(character._id, includeIneligible);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
@@ -363,32 +367,55 @@ export function TrainingCatalogPage() {
         />
       )}
 
-      {/* Invest DT modal (item 2 — capped at remaining) */}
+      {/* Invest DT modal */}
       <Modal isOpen={investModal.open} title="Invest DT" onClose={handleCloseInvestModal} size="sm">
         <div className="flex flex-col gap-4">
           {investModal.entry && (() => {
             const p = investModal.entry.learning_progress;
+            const multiplier = SOURCE_MULTIPLIER[investModal.source];
+            const effective = investModal.amount ? Math.ceil(parseInt(investModal.amount, 10) * multiplier) : 0;
             const remaining = p ? p.dt_required - p.dt_invested : 0;
             return (
               <>
                 <p className="text-sm text-gray-400">
-                  Investing DT in{' '}
-                  <span className="text-gray-200 font-medium">{investModal.entry.trainable_content.name}</span>.{' '}
+                  Training: <span className="text-gray-200 font-medium">{investModal.entry.trainable_content.name}</span>
+                  <br />
                   Progress: <span className="text-indigo-400">{p?.dt_invested ?? 0} / {p?.dt_required ?? 0} DT</span>
-                  {' '}— <span className="text-orange-400">{remaining} remaining</span>
+                  {' '}— <span className="text-orange-400">{remaining} effective DT remaining</span>
                 </p>
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-300">Amount (DT)</label>
+                  <label className="text-sm font-medium text-gray-300">How are you training?</label>
+                  <div className="flex flex-col gap-1.5">
+                    {(['solo', 'library', 'sensei'] as DtSource[]).map((s) => (
+                      <label key={s} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="source"
+                          value={s}
+                          checked={investModal.source === s}
+                          onChange={() => setInvestModal((prev) => ({ ...prev, source: s }))}
+                          className="accent-indigo-500"
+                        />
+                        <span className="text-sm text-gray-300">{SOURCE_LABELS[s]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-300">DT to spend</label>
                   <input
                     type="number"
                     min={1}
-                    max={remaining}
                     value={investModal.amount}
                     onChange={(e) => setInvestModal((prev) => ({ ...prev, amount: e.target.value }))}
-                    placeholder={`1 – ${remaining}`}
+                    placeholder="e.g. 10"
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   />
-                  <p className="text-xs text-gray-500">Max: {remaining} DT</p>
+                  {effective > 0 && (
+                    <p className="text-xs text-indigo-400">
+                      → {effective} effective DT progress ({multiplier}× multiplier)
+                    </p>
+                  )}
                 </div>
               </>
             );

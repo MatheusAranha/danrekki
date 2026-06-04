@@ -165,7 +165,7 @@ export const charactersApi = {
       )
       .then((r) => r.data),
 
-  investDt: (charId: string, progressId: string, body: { amount: number }) =>
+  investDt: (charId: string, progressId: string, body: { amount: number; source: 'solo' | 'library' | 'sensei' }) =>
     apiClient
       .post(
         `/characters/${charId}/learning-progress/${progressId}/invest`,

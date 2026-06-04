@@ -88,7 +88,7 @@ export class GetTrainingCatalogV1UseCase {
 
           if (!includeIneligible && !this.isJutsuEligible(jutsu.elements, affinities)) continue;
 
-          const dtCost = Math.ceil(calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds) / 1.5);
+          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
           libraryEntries.push({
             trainable_content: content,
             jutsu,
@@ -119,7 +119,7 @@ export class GetTrainingCatalogV1UseCase {
             if (!includeIneligible && jutsu && !this.isJutsuEligible(jutsu.elements, affinities)) continue;
           }
 
-          const dtCost = Math.ceil(calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds) / 2);
+          const dtCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
           senseiEntries.push({
             trainable_content: content,
             jutsu,

@@ -115,6 +115,7 @@ export function LearningProgressPage() {
     try {
       await charactersApi.investDt(character._id, investModal.progress._id, {
         amount,
+        source: 'solo',
       });
       showToast('DT invested successfully!', 'success');
       setInvestModal({ open: false, progress: null, amount: '', loading: false });

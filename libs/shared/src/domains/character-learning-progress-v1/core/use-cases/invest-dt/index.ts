@@ -10,13 +10,16 @@ import { CharacterV1NotFoundError } from '../../../../character-v1/core/errors';
 import { DtTransactionV1DatabaseRepository } from '../../../../dt-transaction-v1/core/database-repository';
 import { IInvestDtV1UseCaseInputDto, IInvestDtV1UseCaseOutputDto } from './types';
 
+const SOURCE_MULTIPLIER: Record<string, number> = { solo: 1, library: 1.5, sensei: 2 };
+
 const inputSchema = {
   type: 'object',
-  required: ['progress_id', 'amount'],
+  required: ['progress_id', 'amount', 'source'],
   additionalProperties: false,
   properties: {
     progress_id: { type: 'string', minLength: 1 },
     amount: { type: 'number', exclusiveMinimum: 0 },
+    source: { type: 'string', enum: ['solo', 'library', 'sensei'] },
   },
 };
 
@@ -49,19 +52,24 @@ export class InvestDtV1UseCase {
       if (!character) throw new CharacterV1NotFoundError(`Character with id "${progress.character_id}" not found`);
       log.steps.push({ message: `Character ${progress.character_id} found.` });
 
-      // Cap amount to whatever is still needed to complete — no over-investing.
-      const remaining = progress.dt_required - progress.dt_invested;
-      const amount = Math.min(inputDto.amount, remaining);
+      const multiplier = SOURCE_MULTIPLIER[inputDto.source] ?? 1;
+      const effectiveRemaining = progress.dt_required - progress.dt_invested;
 
-      if (character.available_dt < amount) {
+      // Cap raw DT so effective progress doesn't overshoot dt_required.
+      const maxRaw = Math.ceil(effectiveRemaining / multiplier);
+      const rawAmount = Math.min(inputDto.amount, maxRaw);
+      const effectiveAmount = Math.min(Math.ceil(rawAmount * multiplier), effectiveRemaining);
+
+      if (character.available_dt < rawAmount) {
         throw new InsufficientDtError(
-          `Character "${progress.character_id}" has insufficient DT: available ${character.available_dt}, required ${amount}`,
+          `Character "${progress.character_id}" has insufficient DT: available ${character.available_dt}, required ${rawAmount}`,
         );
       }
-      log.steps.push({ message: `Character has sufficient DT: ${character.available_dt}.` });
+      log.steps.push({ message: `Investing ${rawAmount} raw DT (${inputDto.source} ×${multiplier}) = ${effectiveAmount} effective DT.` });
 
+      // Entity tracks effective DT toward dt_required.
       const updatedProgress = new CharacterLearningProgressV1Entity({ progressInputData: progress })
-        .investDt(amount)
+        .investDt(effectiveAmount)
         .getDto();
       log.steps.push({ message: 'Computed updated learning progress via investDt.' });
 
@@ -69,8 +77,8 @@ export class InvestDtV1UseCase {
       const transactionDto = {
         _id: randomUUID(),
         character_id: progress.character_id,
-        amount: -amount,
-        reason: 'DT invested in learning',
+        amount: -rawAmount,
+        reason: `DT invested in learning (${inputDto.source})`,
         created_at: now,
       };
 
@@ -79,10 +87,7 @@ export class InvestDtV1UseCase {
         await session.withTransaction(async () => {
           await this.characterRepo.update(
             character._id,
-            {
-              available_dt: character.available_dt - amount,
-              updated_at: now,
-            },
+            { available_dt: character.available_dt - rawAmount, updated_at: now },
             session,
           );
           await this.dtTransactionRepo.save(transactionDto, session);
@@ -100,7 +105,7 @@ export class InvestDtV1UseCase {
       } finally {
         await session.endSession();
       }
-      log.steps.push({ message: `DT invested atomically: ${amount} DT for progress ${progress._id}.` });
+      log.steps.push({ message: `Atomically invested ${rawAmount} DT (${effectiveAmount} effective) for progress ${progress._id}.` });
 
       logInfo(`DT invested in learning progress: ${progress._id}`, log);
       return updatedProgress;
