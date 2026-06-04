@@ -10,6 +10,7 @@ export async function connectToDatabase(): Promise<Db> {
   client = new MongoClient(mongoUrl);
   await client.connect();
   db = client.db();
+  console.log('MongoDB connected');
   return db;
 }
 
