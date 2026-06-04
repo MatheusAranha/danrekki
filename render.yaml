@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: mesarpg-api
+    name: danrekki-api
     runtime: node
     plan: free
     region: virginia
