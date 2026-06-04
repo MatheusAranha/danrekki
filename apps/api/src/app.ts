@@ -225,8 +225,9 @@ export function createApp(db: Db) {
   });
 
   const jutsuRepo = new MongoJutsuV1DatabaseRepository(db);
+  const trainableContentRepo = new MongoTrainableContentV1DatabaseRepository(db);
   registerJutsuV1Routes(app, {
-    createJutsu: new CreateJutsuV1UseCase(jutsuRepo),
+    createJutsu: new CreateJutsuV1UseCase(jutsuRepo, trainableContentRepo, jutsuRankRepo),
     getJutsu: new GetJutsuV1UseCase(jutsuRepo),
     listJutsus: new ListJutsusV1UseCase(jutsuRepo),
     updateJutsu: new UpdateJutsuV1UseCase(jutsuRepo),
@@ -280,7 +281,6 @@ export function createApp(db: Db) {
   });
 
   // — Trainable Content —
-  const trainableContentRepo = new MongoTrainableContentV1DatabaseRepository(db);
   registerTrainableContentV1Routes(app, {
     createContent: new CreateTrainableContentV1UseCase(trainableContentRepo, jutsuRepo),
     getContent: new GetTrainableContentV1UseCase(trainableContentRepo),

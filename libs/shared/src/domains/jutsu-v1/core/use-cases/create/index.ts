@@ -5,11 +5,17 @@ import { info as logInfo, error as logError } from '../../../../../_shared/logge
 import { JutsuV1Entity } from '../../entity';
 import { JutsuV1DatabaseRepository } from '../../database-repository';
 import { JutsuV1NameAlreadyExistsError } from '../../errors';
+import { TrainableContentV1DatabaseRepository } from '../../../../trainable-content-v1/core/database-repository';
+import { JutsuRankV1DatabaseRepository } from '../../../../jutsu-rank-v1/core/database-repository';
 import { createJutsuV1InputDtoJsonSchema } from './input-dto.schema';
 import { ICreateJutsuV1UseCaseInputDto, ICreateJutsuV1UseCaseOutputDto } from './types';
 
 export class CreateJutsuV1UseCase {
-  constructor(private readonly jutsuRepository: JutsuV1DatabaseRepository) {}
+  constructor(
+    private readonly jutsuRepository: JutsuV1DatabaseRepository,
+    private readonly contentRepo: TrainableContentV1DatabaseRepository,
+    private readonly jutsuRankRepo: JutsuRankV1DatabaseRepository,
+  ) {}
 
   async execute(inputDto: ICreateJutsuV1UseCaseInputDto): Promise<ICreateJutsuV1UseCaseOutputDto> {
     const log: ILog = { module: CreateJutsuV1UseCase.name, method: 'execute', steps: [], error: null };
@@ -45,6 +51,19 @@ export class CreateJutsuV1UseCase {
 
       const saved = await this.jutsuRepository.save(dto);
       log.steps.push({ message: `Jutsu "${saved.name}" persisted with id ${saved._id}.` });
+
+      const rank = await this.jutsuRankRepo.findById(saved.jutsu_rank_id);
+      await this.contentRepo.save({
+        _id: randomUUID(),
+        type: 'jutsu',
+        jutsu_id: saved._id,
+        name: saved.name,
+        description: saved.description,
+        base_dt_cost: rank?.dt_cost ?? 0,
+        created_at: now,
+        updated_at: now,
+      });
+      log.steps.push({ message: `TrainableContent auto-created for jutsu "${saved.name}".` });
 
       logInfo(`Jutsu created: ${saved._id}`, log);
       return saved;
