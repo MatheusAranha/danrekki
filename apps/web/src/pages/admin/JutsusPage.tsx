@@ -173,6 +173,7 @@ export function JutsusPage() {
   const [jutsuRanks, setJutsuRanks] = useState<JutsuRank[]>([]);
   const [keywords, setKeywords] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Jutsu | null>(null);
   const [saving, setSaving] = useState(false);
@@ -246,6 +247,10 @@ export function JutsusPage() {
   const rankMap = Object.fromEntries(jutsuRanks.map((r) => [r._id, r.name]));
   const keywordMap = Object.fromEntries(keywords.map((k) => [k._id, k.name]));
 
+  const filteredJutsus = search.trim()
+    ? jutsus.filter((j) => j.name.toLowerCase().includes(search.toLowerCase()))
+    : jutsus;
+
   const columns: Column<Jutsu>[] = [
     { key: 'name', label: 'Name' },
     {
@@ -280,9 +285,17 @@ export function JutsusPage() {
         description="All learnable jutsu."
         action={{ label: '+ New Jutsu', onClick: openCreate }}
       />
+      <div className="mb-4">
+        <input
+          className="w-full max-w-sm bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+          placeholder="Search jutsus..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
       <DataTable
         columns={columns}
-        data={jutsus}
+        data={filteredJutsus}
         loading={loading}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
