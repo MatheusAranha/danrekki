@@ -45,6 +45,7 @@ export async function seedJutsus(db: Db): Promise<void> {
   const rankDtCost = new Map(SEED_JUTSU_RANKS.map((r) => [r._id, r.dt_cost]));
   let jutsuInserted = 0;
   let contentInserted = 0;
+  let contentUpdated = 0;
 
   for (const jutsu of SEED_JUTSUS) {
     if (!existingJutsuIds.has(jutsu._id)) {
@@ -52,7 +53,8 @@ export async function seedJutsus(db: Db): Promise<void> {
       jutsuInserted++;
     }
 
-    // Backfill trainable content for every jutsu that doesn't have one yet.
+    const expectedDtCost = rankDtCost.get(jutsu.jutsu_rank_id) ?? 0;
+
     if (!existingContentJutsuIds.has(jutsu._id)) {
       await contentRepo.save({
         _id: randomUUID(),
@@ -60,14 +62,20 @@ export async function seedJutsus(db: Db): Promise<void> {
         jutsu_id: jutsu._id,
         name: jutsu.name,
         description: jutsu.description,
-        base_dt_cost: rankDtCost.get(jutsu.jutsu_rank_id) ?? 0,
+        base_dt_cost: expectedDtCost,
         created_at: now,
         updated_at: now,
       });
       contentInserted++;
+    } else {
+      const existing = await contentRepo.findByJutsuId(jutsu._id);
+      if (existing && existing.base_dt_cost !== expectedDtCost) {
+        await contentRepo.update(existing._id, { base_dt_cost: expectedDtCost, updated_at: now });
+        contentUpdated++;
+      }
     }
   }
 
   console.log(`[jutsu-seeder] Jutsus: ${jutsuInserted} inserted, ${SEED_JUTSUS.length - jutsuInserted} already exist.`);
-  console.log(`[jutsu-seeder] Trainable contents: ${contentInserted} backfilled.`);
+  console.log(`[jutsu-seeder] Trainable contents: ${contentInserted} backfilled, ${contentUpdated} updated.`);
 }
