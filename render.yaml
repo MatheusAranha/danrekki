@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: virginia
-    buildCommand: rm pnpm-lock.yaml && npm install --include=dev --legacy-peer-deps && ./node_modules/.bin/nx build api
+    buildCommand: bash scripts/render-build.sh
     startCommand: node dist/apps/api/src/server.js
     envVars:
       - key: NODE_ENV
