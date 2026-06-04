@@ -3,7 +3,7 @@ set -e
 
 # pnpm-lock.yaml causes NX to activate its pnpm plugin which looks for
 # node_modules/.modules.yaml — a file that only exists after a pnpm install.
-rm pnpm-lock.yaml
+rm -f pnpm-lock.yaml
 
 # NODE_ENV=production makes npm skip devDependencies.
 # --include=dev overrides that so nx, typescript, and @nx/* are installed.
