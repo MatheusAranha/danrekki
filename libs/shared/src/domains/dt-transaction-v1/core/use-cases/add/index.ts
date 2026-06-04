@@ -40,6 +40,12 @@ export class AddDtTransactionV1UseCase {
       const saved = await this.transactionRepo.save(dto);
       log.steps.push({ message: `DtTransaction persisted with id ${saved._id}.` });
 
+      await this.characterRepo.update(inputDto.character_id, {
+        available_dt: character.available_dt + inputDto.amount,
+        updated_at: new Date().toISOString(),
+      });
+      log.steps.push({ message: `Character available_dt updated to ${character.available_dt + inputDto.amount}.` });
+
       logInfo(`DtTransaction added: ${saved._id}`, log);
       return saved;
     } catch (err) {
