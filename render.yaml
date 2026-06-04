@@ -1,11 +1,10 @@
 services:
   - type: web
     name: danrekki-api
-    runtime: node
+    runtime: docker
+    dockerfilePath: Dockerfile.render
     plan: free
     region: virginia
-    buildCommand: bash scripts/render-build.sh
-    startCommand: node dist/apps/api/src/server.js
     envVars:
       - key: NODE_ENV
         value: production
