@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: virginia
-    buildCommand: npm install -g pnpm && pnpm install && npx nx build api
+    buildCommand: npx pnpm@9 install && npx nx build api
     startCommand: node dist/apps/api/src/server.js
     envVars:
       - key: NODE_ENV
