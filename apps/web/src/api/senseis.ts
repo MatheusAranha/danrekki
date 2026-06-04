@@ -4,6 +4,7 @@ export interface Sensei {
   _id: string;
   name: string;
   description: string;
+  picture_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -20,9 +21,9 @@ export interface SenseiContent {
 export const senseisApi = {
   list: () => apiClient.get<Sensei[]>('/senseis').then((r) => r.data),
   get: (id: string) => apiClient.get<Sensei>(`/senseis/${id}`).then((r) => r.data),
-  create: (body: { name: string; description: string }) =>
+  create: (body: { name: string; description: string; picture_url?: string | null }) =>
     apiClient.post<Sensei>('/senseis', body).then((r) => r.data),
-  update: (id: string, body: Partial<{ name: string; description: string }>) =>
+  update: (id: string, body: Partial<{ name: string; description: string; picture_url: string | null }>) =>
     apiClient.patch<Sensei>(`/senseis/${id}`, body).then((r) => r.data),
   delete: (id: string) => apiClient.delete(`/senseis/${id}`),
 };

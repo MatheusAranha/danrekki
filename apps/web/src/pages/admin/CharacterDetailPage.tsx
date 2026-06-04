@@ -327,6 +327,40 @@ export function CharacterDetailPage() {
         </div>
       </div>
 
+      {/* Profile Picture */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
+        <h2 className="text-sm font-semibold text-gray-300 mb-3">Profile Picture</h2>
+        <div className="flex items-start gap-4">
+          {character.picture_url && (
+            <img src={character.picture_url} alt={character.name} className="w-16 h-16 rounded-full object-cover border border-gray-700 flex-shrink-0" />
+          )}
+          <div className="flex-1 flex gap-2">
+            <input
+              className={inputClass}
+              placeholder="https://example.com/image.png"
+              defaultValue={character.picture_url ?? ''}
+              id="picture_url_input"
+            />
+            <Button
+              size="sm"
+              type="button"
+              onClick={async () => {
+                const val = (document.getElementById('picture_url_input') as HTMLInputElement).value.trim();
+                try {
+                  const updated = await charactersApi.update(characterId!, { picture_url: val || null });
+                  setCharacter(updated);
+                  show('Picture updated');
+                } catch {
+                  show('Failed to update picture', 'error');
+                }
+              }}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Elemental Releases */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
         <h2 className="text-sm font-semibold text-gray-300 mb-3">Elemental Releases</h2>

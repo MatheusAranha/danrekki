@@ -24,6 +24,7 @@ export class UpdateCharacterV1UseCase {
         ...(inputDto.name !== undefined && { name: inputDto.name }),
         ...(inputDto.clan_id !== undefined && { clan_id: inputDto.clan_id }),
         ...(inputDto.elemental_releases !== undefined && { elemental_releases: inputDto.elemental_releases }),
+        ...(inputDto.picture_url !== undefined && { picture_url: inputDto.picture_url }),
         updated_at: new Date().toISOString(),
       });
       log.steps.push({ message: `Character ${inputDto.id} updated.` });

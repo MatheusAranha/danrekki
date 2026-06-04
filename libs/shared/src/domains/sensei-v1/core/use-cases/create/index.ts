@@ -28,6 +28,7 @@ export class CreateSenseiV1UseCase {
           _id: randomUUID(),
           name: inputDto.name,
           description: inputDto.description,
+          picture_url: inputDto.picture_url ?? null,
           created_at: now,
           updated_at: now,
         },

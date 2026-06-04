@@ -12,6 +12,7 @@ class CharacterV1Factory {
       clan_id: randomUUID(),
       available_dt: 0,
       elemental_releases: [],
+      picture_url: null,
       created_at: now,
       updated_at: now,
       ...params?.overrides,

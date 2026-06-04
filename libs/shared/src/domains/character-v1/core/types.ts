@@ -9,6 +9,7 @@ export interface ICharacterV1Dto {
   clan_id: string;
   available_dt: number;
   elemental_releases: JutsuElement[];
+  picture_url: string | null;
   created_at: string;
   updated_at: string;
 }

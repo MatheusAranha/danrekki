@@ -9,6 +9,7 @@ class SenseiV1Factory {
       _id: randomUUID(),
       name: faker.person.fullName(),
       description: faker.lorem.sentence(),
+      picture_url: null,
       created_at: now,
       updated_at: now,
       ...params?.overrides,

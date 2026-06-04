@@ -7,6 +7,7 @@ export interface Character {
   clan_id: string;
   available_dt: number;
   elemental_releases: string[];
+  picture_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -102,7 +103,7 @@ export const charactersApi = {
     apiClient.get<Character>(`/characters/${id}`).then((r) => r.data),
   create: (body: { name: string; user_id: string; clan_id: string }) =>
     apiClient.post<Character>('/characters', body).then((r) => r.data),
-  update: (id: string, body: Partial<{ name: string; clan_id: string; elemental_releases: string[] }>) =>
+  update: (id: string, body: Partial<{ name: string; clan_id: string; elemental_releases: string[]; picture_url: string | null }>) =>
     apiClient.patch<Character>(`/characters/${id}`, body).then((r) => r.data),
 
   getKeywords: (id: string) =>

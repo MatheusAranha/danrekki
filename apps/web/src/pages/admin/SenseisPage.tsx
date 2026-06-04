@@ -20,16 +20,17 @@ function SenseiForm({
   saving,
 }: {
   initial?: Sensei;
-  onSave: (name: string, description: string) => void;
+  onSave: (name: string, description: string, pictureUrl: string | null) => void;
   onCancel: () => void;
   saving: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
+  const [pictureUrl, setPictureUrl] = useState(initial?.picture_url ?? '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(name, description);
+    onSave(name, description, pictureUrl.trim() || null);
   };
 
   return (
@@ -50,6 +51,17 @@ function SenseiForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe this sensei..."
         />
+      </FormField>
+      <FormField label="Profile Picture URL">
+        <div className="flex items-center gap-3">
+          {pictureUrl && <img src={pictureUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-700 flex-shrink-0" />}
+          <input
+            className={inputClass}
+            value={pictureUrl}
+            onChange={(e) => setPictureUrl(e.target.value)}
+            placeholder="https://example.com/sensei.png"
+          />
+        </div>
       </FormField>
       <div className="flex justify-end gap-3 pt-2">
         <Button variant="secondary" type="button" onClick={onCancel}>Cancel</Button>
@@ -86,14 +98,14 @@ export function SenseisPage() {
   const openEdit = (s: Sensei) => { setEditing(s); setModalOpen(true); };
   const closeModal = () => { setModalOpen(false); setEditing(null); };
 
-  const handleSave = async (name: string, description: string) => {
+  const handleSave = async (name: string, description: string, pictureUrl: string | null) => {
     setSaving(true);
     try {
       if (editing) {
-        await senseisApi.update(editing._id, { name, description });
+        await senseisApi.update(editing._id, { name, description, picture_url: pictureUrl });
         show('Sensei updated');
       } else {
-        await senseisApi.create({ name, description });
+        await senseisApi.create({ name, description, picture_url: pictureUrl });
         show('Sensei created');
       }
       closeModal();

@@ -1,6 +1,6 @@
 export const characterV1EntityJsonSchema = {
   type: 'object',
-  required: ['_id', 'name', 'user_id', 'clan_id', 'available_dt', 'elemental_releases', 'created_at', 'updated_at'],
+  required: ['_id', 'name', 'user_id', 'clan_id', 'available_dt', 'elemental_releases', 'picture_url', 'created_at', 'updated_at'],
   additionalProperties: false,
   properties: {
     _id: { type: 'string', minLength: 1 },
@@ -9,6 +9,7 @@ export const characterV1EntityJsonSchema = {
     clan_id: { type: 'string', minLength: 1 },
     available_dt: { type: 'number', minimum: 0 },
     elemental_releases: { type: 'array', items: { type: 'string', enum: ['katon', 'suiton', 'doton', 'futon', 'raiton', 'iryo'] }, default: [] },
+    picture_url: { type: ['string', 'null'] },
     created_at: { type: 'string' },
     updated_at: { type: 'string' },
   },

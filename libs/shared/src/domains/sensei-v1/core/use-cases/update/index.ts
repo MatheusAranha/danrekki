@@ -29,6 +29,7 @@ export class UpdateSenseiV1UseCase {
       const updated = await this.senseiRepository.update(inputDto.id, {
         ...(inputDto.name !== undefined && { name: inputDto.name }),
         ...(inputDto.description !== undefined && { description: inputDto.description }),
+        ...(inputDto.picture_url !== undefined && { picture_url: inputDto.picture_url }),
         updated_at: new Date().toISOString(),
       });
       log.steps.push({ message: `Sensei ${inputDto.id} updated.` });

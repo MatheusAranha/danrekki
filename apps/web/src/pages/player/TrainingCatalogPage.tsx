@@ -7,6 +7,7 @@ import {
   Jutsu,
 } from '../../api/characters';
 import { releasesApi, Release } from '../../api/releases';
+import { senseisApi, Sensei } from '../../api/senseis';
 import { useAuthStore } from '../../stores/auth';
 import { useToastStore } from '../../stores/toast';
 import { Badge } from '../../components/Badge';
@@ -132,9 +133,10 @@ interface CatalogSectionProps {
   onInvestDt: (entry: CatalogEntry) => void;
   onViewDetail: (entry: CatalogEntry) => void;
   startingId: string | null;
+  senseiMap?: Record<string, Sensei>;
 }
 
-function CatalogSection({ title, entries, onStartLearning, onInvestDt, onViewDetail, startingId }: CatalogSectionProps) {
+function CatalogSection({ title, entries, onStartLearning, onInvestDt, onViewDetail, startingId, senseiMap = {} }: CatalogSectionProps) {
   if (entries.length === 0) {
     return (
       <div>
@@ -157,6 +159,12 @@ function CatalogSection({ title, entries, onStartLearning, onInvestDt, onViewDet
           return (
             <div key={contentId} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                {entry.source.type === 'sensei' && (() => {
+                  const sensei = senseiMap[entry.source.sensei_id];
+                  return sensei?.picture_url ? (
+                    <img src={sensei.picture_url} alt={sensei.name} title={sensei.name} className="w-10 h-10 rounded-full object-cover border border-gray-700 flex-shrink-0 mt-0.5" />
+                  ) : null;
+                })()}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <button
@@ -221,6 +229,7 @@ export function TrainingCatalogPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [catalog, setCatalog] = useState<TrainingCatalog | null>(null);
   const [keywords, setKeywords] = useState<Release[]>([]);
+  const [senseiMap, setSenseiMap] = useState<Record<string, Sensei>>({});
   const [loading, setLoading] = useState(true);
   const [includeIneligible, setIncludeIneligible] = useState(false);
   const [startingId, setStartingId] = useState<string | null>(null);
@@ -243,7 +252,8 @@ export function TrainingCatalogPage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [all, kw] = await Promise.all([charactersApi.list(), releasesApi.list()]);
+        const [all, kw, senseis] = await Promise.all([charactersApi.list(), releasesApi.list(), senseisApi.list()]);
+      setSenseiMap(Object.fromEntries(senseis.map((s) => [s._id, s])));
         const match = all.find((c) => c.user_id === user?._id) ?? null;
         setCharacter(match);
         setKeywords(kw);
@@ -353,6 +363,7 @@ export function TrainingCatalogPage() {
             onInvestDt={handleOpenInvestModal}
             onViewDetail={setDetailEntry}
             startingId={startingId}
+            senseiMap={senseiMap}
           />
         </div>
       )}

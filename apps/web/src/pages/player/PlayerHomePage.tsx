@@ -75,9 +75,18 @@ export function PlayerHomePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-100">{character.name}</h1>
-          <p className="text-sm text-gray-400 mt-1">Your character profile</p>
+        <div className="flex items-center gap-4">
+          {character.picture_url ? (
+            <img src={character.picture_url} alt={character.name} className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/50 flex-shrink-0" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gray-800 border-2 border-gray-700 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl text-gray-500">{character.name[0]}</span>
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-100">{character.name}</h1>
+            <p className="text-sm text-gray-400 mt-1">Your character profile</p>
+          </div>
         </div>
         <button
           onClick={load}

@@ -6,6 +6,6 @@ export abstract class CharacterV1DatabaseRepository {
   abstract findByUserId(userId: string): Promise<ICharacterV1Dto[]>;
   abstract findAll(): Promise<ICharacterV1Dto[]>;
   abstract save(dto: ICharacterV1Dto): Promise<ICharacterV1Dto>;
-  abstract update(id: string, updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'elemental_releases' | 'updated_at'>>, session?: RepositorySession): Promise<ICharacterV1Dto | null>;
+  abstract update(id: string, updates: Partial<Pick<ICharacterV1Dto, 'name' | 'clan_id' | 'available_dt' | 'elemental_releases' | 'picture_url' | 'updated_at'>>, session?: RepositorySession): Promise<ICharacterV1Dto | null>;
   abstract delete(id: string): Promise<boolean>;
 }

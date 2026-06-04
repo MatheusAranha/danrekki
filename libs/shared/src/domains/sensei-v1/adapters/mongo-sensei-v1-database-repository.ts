@@ -34,7 +34,7 @@ export class MongoSenseiV1DatabaseRepository extends SenseiV1DatabaseRepository 
 
   async update(
     id: string,
-    updates: Partial<Pick<ISenseiV1Dto, 'name' | 'description' | 'updated_at'>>,
+    updates: Partial<Pick<ISenseiV1Dto, 'name' | 'description' | 'picture_url' | 'updated_at'>>,
   ): Promise<ISenseiV1Dto | null> {
     const result = await this.collection.findOneAndUpdate(
       { _id: id } as never,
