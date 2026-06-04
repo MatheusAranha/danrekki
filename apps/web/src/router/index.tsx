@@ -21,6 +21,7 @@ import { PlayerHomePage } from '../pages/player/PlayerHomePage';
 import { TrainingCatalogPage } from '../pages/player/TrainingCatalogPage';
 import { LearningProgressPage } from '../pages/player/LearningProgressPage';
 import { DtHistoryPage } from '../pages/player/DtHistoryPage';
+import { MyJutsusPage } from '../pages/player/MyJutsusPage';
 
 function RootRedirect() {
   const { token, user } = useAuthStore();
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <PlayerHomePage /> },
       { path: 'catalog', element: <TrainingCatalogPage /> },
+      { path: 'my-jutsus', element: <MyJutsusPage /> },
       { path: 'progress', element: <LearningProgressPage /> },
       { path: 'dt-history', element: <DtHistoryPage /> },
     ],

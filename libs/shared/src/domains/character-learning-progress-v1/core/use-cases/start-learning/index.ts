@@ -9,6 +9,8 @@ import { CharacterV1DatabaseRepository } from '../../../../character-v1/core/dat
 import { CharacterV1NotFoundError } from '../../../../character-v1/core/errors';
 import { TrainableContentV1DatabaseRepository } from '../../../../trainable-content-v1/core/database-repository';
 import { TrainableContentV1NotFoundError } from '../../../../trainable-content-v1/core/errors';
+import { JutsuV1DatabaseRepository } from '../../../../jutsu-v1/core/database-repository';
+import { JutsuElement } from '../../../../jutsu-v1/core/types';
 import { ClanV1DatabaseRepository } from '../../../../clan-v1/core/database-repository';
 import { CharacterKeywordV1DatabaseRepository } from '../../../../character-release-v1/core/database-repository';
 import { CharacterLibraryV1DatabaseRepository } from '../../../../character-library-v1/core/database-repository';
@@ -17,6 +19,12 @@ import { CharacterSenseiV1DatabaseRepository } from '../../../../character-sense
 import { SenseiContentV1DatabaseRepository } from '../../../../sensei-content-v1/core/database-repository';
 import { calculateDtCost } from '../../services/calculate-dt-cost';
 import { IStartLearningV1UseCaseInputDto, IStartLearningV1UseCaseOutputDto } from './types';
+
+// DT multipliers: each DT you invest "counts for" more progress when learning with a better source.
+const SOURCE_DT_DIVISOR: Record<'sensei' | 'library', number> = {
+  sensei: 2,    // learn twice as fast with a sensei
+  library: 1.5, // learn 1.5× faster via scroll vs. raw
+};
 
 const inputSchema = {
   type: 'object',
@@ -39,6 +47,7 @@ export class StartLearningV1UseCase {
     private readonly libraryScrollRepo: LibraryScrollV1DatabaseRepository,
     private readonly characterSenseiRepo: CharacterSenseiV1DatabaseRepository,
     private readonly senseiContentRepo: SenseiContentV1DatabaseRepository,
+    private readonly jutsuRepo: JutsuV1DatabaseRepository,
   ) {}
 
   async execute(inputDto: IStartLearningV1UseCaseInputDto): Promise<IStartLearningV1UseCaseOutputDto> {
@@ -64,7 +73,22 @@ export class StartLearningV1UseCase {
       }
       log.steps.push({ message: 'Verified no active learning progress exists.' });
 
-      await this.checkAccess(inputDto.character_id, content._id, content.jutsu_id, log);
+      // Check elemental eligibility for jutsu content.
+      if (content.type === 'jutsu' && content.jutsu_id) {
+        const jutsu = await this.jutsuRepo.findById(content.jutsu_id);
+        if (jutsu && jutsu.elements.length > 0) {
+          const affinities = new Set<JutsuElement>(character.elemental_releases);
+          const eligible = jutsu.elements.some((el) => affinities.has(el));
+          if (!eligible) {
+            throw new TrainingAccessDeniedError(
+              `Character "${inputDto.character_id}" does not have the required elemental release to learn "${jutsu.name}"`,
+            );
+          }
+          log.steps.push({ message: 'Elemental eligibility confirmed.' });
+        }
+      }
+
+      const source = await this.checkAccess(inputDto.character_id, content._id, content.jutsu_id, log);
 
       const clan = character.clan_id ? await this.clanRepo.findById(character.clan_id) : null;
       log.steps.push({ message: clan ? `Clan ${character.clan_id} found.` : 'No clan found, using empty modifiers.' });
@@ -73,8 +97,9 @@ export class StartLearningV1UseCase {
       const keywordIds = characterKeywords.map((r) => r.keyword_id);
       log.steps.push({ message: `Retrieved ${keywordIds.length} keyword(s) for character ${inputDto.character_id}.` });
 
-      const dtRequired = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
-      log.steps.push({ message: `Calculated dt_required: ${dtRequired}.` });
+      const baseCost = calculateDtCost(content.base_dt_cost, clan?.dt_modifiers ?? [], keywordIds);
+      const dtRequired = Math.ceil(baseCost / SOURCE_DT_DIVISOR[source]);
+      log.steps.push({ message: `Calculated dt_required: ${dtRequired} (source: ${source}, divisor: ${SOURCE_DT_DIVISOR[source]}).` });
 
       const now = new Date().toISOString();
       const progressDto = new CharacterLearningProgressV1Entity({
@@ -107,20 +132,19 @@ export class StartLearningV1UseCase {
     }
   }
 
-  private async checkAccess(characterId: string, contentId: string, jutsuId: string | null, log: ILog): Promise<void> {
+  private async checkAccess(
+    characterId: string,
+    contentId: string,
+    jutsuId: string | null,
+    log: ILog,
+  ): Promise<'sensei' | 'library'> {
     const charSenseis = await this.characterSenseiRepo.findByCharacterId(characterId);
-    let hasSenseiAccess = false;
     for (const charSensei of charSenseis) {
       const sc = await this.senseiContentRepo.findBySenseiAndContent(charSensei.sensei_id, contentId);
       if (sc && charSensei.proximity >= sc.required_proximity) {
-        hasSenseiAccess = true;
-        break;
+        log.steps.push({ message: 'Access granted via sensei.' });
+        return 'sensei';
       }
-    }
-
-    if (hasSenseiAccess) {
-      log.steps.push({ message: 'Access granted via sensei.' });
-      return;
     }
 
     if (jutsuId) {
@@ -129,7 +153,7 @@ export class StartLearningV1UseCase {
         const scrolls = await this.libraryScrollRepo.findByLibraryId(charLib.library_id);
         if (scrolls.some((s) => s.jutsu_id === jutsuId)) {
           log.steps.push({ message: 'Access granted via library scroll.' });
-          return;
+          return 'library';
         }
       }
     }

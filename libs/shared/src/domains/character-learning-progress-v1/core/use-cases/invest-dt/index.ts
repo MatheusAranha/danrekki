@@ -49,15 +49,19 @@ export class InvestDtV1UseCase {
       if (!character) throw new CharacterV1NotFoundError(`Character with id "${progress.character_id}" not found`);
       log.steps.push({ message: `Character ${progress.character_id} found.` });
 
-      if (character.available_dt < inputDto.amount) {
+      // Cap amount to whatever is still needed to complete — no over-investing.
+      const remaining = progress.dt_required - progress.dt_invested;
+      const amount = Math.min(inputDto.amount, remaining);
+
+      if (character.available_dt < amount) {
         throw new InsufficientDtError(
-          `Character "${progress.character_id}" has insufficient DT: available ${character.available_dt}, required ${inputDto.amount}`,
+          `Character "${progress.character_id}" has insufficient DT: available ${character.available_dt}, required ${amount}`,
         );
       }
       log.steps.push({ message: `Character has sufficient DT: ${character.available_dt}.` });
 
       const updatedProgress = new CharacterLearningProgressV1Entity({ progressInputData: progress })
-        .investDt(inputDto.amount)
+        .investDt(amount)
         .getDto();
       log.steps.push({ message: 'Computed updated learning progress via investDt.' });
 
@@ -65,7 +69,7 @@ export class InvestDtV1UseCase {
       const transactionDto = {
         _id: randomUUID(),
         character_id: progress.character_id,
-        amount: -inputDto.amount,
+        amount: -amount,
         reason: 'DT invested in learning',
         created_at: now,
       };
@@ -76,7 +80,7 @@ export class InvestDtV1UseCase {
           await this.characterRepo.update(
             character._id,
             {
-              available_dt: character.available_dt - inputDto.amount,
+              available_dt: character.available_dt - amount,
               updated_at: now,
             },
             session,
@@ -96,7 +100,7 @@ export class InvestDtV1UseCase {
       } finally {
         await session.endSession();
       }
-      log.steps.push({ message: `DT invested atomically: ${inputDto.amount} DT for progress ${progress._id}.` });
+      log.steps.push({ message: `DT invested atomically: ${amount} DT for progress ${progress._id}.` });
 
       logInfo(`DT invested in learning progress: ${progress._id}`, log);
       return updatedProgress;

@@ -336,6 +336,7 @@ export function createApp(db: Db) {
       libraryScrollRepo,
       characterSenseiRepo,
       senseiContentRepo,
+      jutsuRepo,
     ),
     investDt: new InvestDtV1UseCase(learningProgressRepo, characterRepo, dtTransactionRepo, sessionFactory),
     getProgress: new GetCharacterLearningProgressV1UseCase(learningProgressRepo),

@@ -8,6 +8,7 @@ interface PlayerLayoutProps {
 
 const navLinks = [
   { to: '/player', label: 'My Character', end: true },
+  { to: '/player/my-jutsus', label: 'My Jutsus', end: false },
   { to: '/player/catalog', label: 'Training Catalog', end: false },
   { to: '/player/progress', label: 'My Progress', end: false },
   { to: '/player/dt-history', label: 'DT History', end: false },
