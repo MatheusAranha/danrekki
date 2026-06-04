@@ -98,6 +98,8 @@ export const charactersApi = {
     apiClient.get<Character>(`/characters/${id}`).then((r) => r.data),
   create: (body: { name: string; user_id: string; clan_id: string }) =>
     apiClient.post<Character>('/characters', body).then((r) => r.data),
+  update: (id: string, body: Partial<{ name: string; clan_id: string; elemental_affinities: string[] }>) =>
+    apiClient.patch<Character>(`/characters/${id}`, body).then((r) => r.data),
 
   getKeywords: (id: string) =>
     apiClient

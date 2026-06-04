@@ -62,6 +62,9 @@ export function CharacterDetailPage() {
   const [dtReason, setDtReason] = useState('');
   const [dtLoading, setDtLoading] = useState(false);
 
+  // Elemental affinities
+  const [affinitiesSaving, setAffinitiesSaving] = useState(false);
+
   // Add modals
   const [addKeywordId, setAddReleaseId] = useState('');
   const [addLibraryId, setAddLibraryId] = useState('');
@@ -130,6 +133,24 @@ export function CharacterDetailPage() {
   };
 
   useEffect(() => { loadAll(); }, [characterId]);
+
+  const handleToggleAffinity = async (element: string) => {
+    if (!characterId || !character || affinitiesSaving) return;
+    setAffinitiesSaving(true);
+    try {
+      const current = character.elemental_affinities ?? [];
+      const next = current.includes(element)
+        ? current.filter((e) => e !== element)
+        : [...current, element];
+      const updated = await charactersApi.update(characterId, { elemental_affinities: next });
+      setCharacter(updated);
+    } catch (err: unknown) {
+      const ex = err as { response?: { data?: { error?: string } }; message?: string };
+      show(ex.response?.data?.error || ex.message || 'Failed to update affinities', 'error');
+    } finally {
+      setAffinitiesSaving(false);
+    }
+  };
 
   const handleAddDt = async (e: FormEvent) => {
     e.preventDefault();
@@ -305,6 +326,31 @@ export function CharacterDetailPage() {
           <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Available DT</p>
           <p className="text-orange-400 font-bold text-xl">{character.available_dt.toLocaleString()}</p>
         </div>
+      </div>
+
+      {/* Elemental Affinities */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
+        <h2 className="text-sm font-semibold text-gray-300 mb-3">Elemental Affinities</h2>
+        <div className="flex flex-wrap gap-2">
+          {(['katon', 'suiton', 'doton', 'futon', 'raiton'] as const).map((el) => {
+            const active = (character.elemental_affinities ?? []).includes(el);
+            return (
+              <button
+                key={el}
+                onClick={() => handleToggleAffinity(el)}
+                disabled={affinitiesSaving}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors disabled:opacity-50 ${
+                  active
+                    ? 'bg-orange-500 border-orange-500 text-white'
+                    : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-orange-500'
+                }`}
+              >
+                {el}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-gray-500 mt-3">Click an element to toggle it. Determines which elemental jutsu this character is eligible to learn.</p>
       </div>
 
       {/* Add DT */}
