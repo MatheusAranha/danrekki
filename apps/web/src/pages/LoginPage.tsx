@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { authApi } from '../api/auth';
 import { useAuthStore } from '../stores/auth';
 import { Button } from '../components/Button';
@@ -29,9 +30,23 @@ export function LoginPage() {
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
-      setError(
-        axiosErr.response?.data?.error || axiosErr.message || 'Login failed.'
-      );
+      setError(axiosErr.response?.data?.error || axiosErr.message || 'Login failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+    setError('');
+    setLoading(true);
+    try {
+      const data = await authApi.googleLogin(credentialResponse.credential);
+      login(data.token, { _id: data.user.id, email: data.user.email, role: data.user.role, name: data.user.name, picture: data.user.picture });
+      navigate('/player', { replace: true });
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
+      setError(axiosErr.response?.data?.error || axiosErr.message || 'Google login failed.');
     } finally {
       setLoading(false);
     }
@@ -48,42 +63,60 @@ export function LoginPage() {
           <p className="text-sm text-gray-400">RPG Training Management System</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-300">Email</label>
-            <input
-              type="email"
-              className={inputClass}
-              placeholder="admin@danrekki.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoFocus
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google sign-in failed.')}
+              theme="filled_black"
+              shape="rectangular"
+              size="large"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-300">Password</label>
-            <input
-              type="password"
-              className={inputClass}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-700" />
+            <span className="text-xs text-gray-500">admin login</span>
+            <div className="flex-1 h-px bg-gray-700" />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-300">Email</label>
+              <input
+                type="email"
+                className={inputClass}
+                placeholder="admin@danrekki.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
 
-          <Button type="submit" loading={loading} className="w-full justify-center mt-2">
-            Sign In
-          </Button>
-        </form>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-300">Password</label>
+              <input
+                type="password"
+                className={inputClass}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" loading={loading} className="w-full justify-center mt-2">
+              Sign In
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
